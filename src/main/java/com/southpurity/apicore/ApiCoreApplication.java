@@ -6,6 +6,7 @@ import com.southpurity.apicore.model.constant.RoleEnum;
 import com.southpurity.apicore.repository.PlaceRepository;
 import com.southpurity.apicore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,31 +16,35 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class ApiCoreApplication implements CommandLineRunner {
 
-	private final UserRepository userRepository;
-	private final PlaceRepository placeRepository;
-	private final PasswordEncoder bcryptEncoder;
+    private final UserRepository userRepository;
+    private final PlaceRepository placeRepository;
+    private final PasswordEncoder bcryptEncoder;
 
-	public static void main(String[] args) {
-		SpringApplication.run(ApiCoreApplication.class, args);
-	}
+    @Value("${configuration.restart-data:false}")
+    private boolean populate;
 
-	@Override
-	public void run(String... args) {
-		userRepository.deleteAll();
-		placeRepository.deleteAll();
+    public static void main(String[] args) {
+        SpringApplication.run(ApiCoreApplication.class, args);
+    }
 
-		var newUser = UserDocument.builder()
-				.email("omar.fdo.gomez@gmail.com")
-				.role(RoleEnum.ADMINISTRATOR)
-				.fullName("Omar Gomez")
-				.password(bcryptEncoder.encode("samsungMac"))
-				.build();
-		userRepository.save(newUser);
+    @Override
+    public void run(String... args) {
+        if (populate) {
+            userRepository.deleteAll();
+            placeRepository.deleteAll();
 
-		var place = PlaceDocument.builder()
-				.country("Valdivia")
-				.address("Condominio Los Notros #443").build();
-		placeRepository.save(place);
+            var newUser = UserDocument.builder()
+                    .email("omar.fdo.gomez@gmail.com")
+                    .role(RoleEnum.ADMINISTRATOR)
+                    .fullName("Omar Gomez")
+                    .password(bcryptEncoder.encode("samsungMac"))
+                    .build();
+            userRepository.save(newUser);
 
-	}
+            var place = PlaceDocument.builder()
+                    .country("Valdivia")
+                    .address("Condominio Los Notros #443").build();
+            placeRepository.save(place);
+        }
+    }
 }
