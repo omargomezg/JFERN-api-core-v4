@@ -1,10 +1,11 @@
 package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.config.JwtTokenService;
-import com.southpurity.apicore.dto.JwtResponse;
+import com.southpurity.apicore.dto.LoginResponse;
 import com.southpurity.apicore.dto.UserDTO;
 import com.southpurity.apicore.model.UserDocument;
 import com.southpurity.apicore.service.JwtUserDetailsService;
+import com.southpurity.apicore.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,19 +24,20 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenUtil;
+    private final ProfileService profileService;
     private final JwtUserDetailsService userDetailsService;
 
     @PostMapping("/auth/token")
-    public ResponseEntity<JwtResponse> createAuthenticationToken(@RequestBody UserDTO authenticationRequest) throws Exception {
-
+    public ResponseEntity<LoginResponse> createAuthenticationToken(@RequestBody UserDTO authenticationRequest) throws Exception {
         final Authentication auth = authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
         SecurityContextHolder.getContext().setAuthentication(auth);
-        return ResponseEntity.ok(new JwtResponse(jwtTokenUtil.generateToken(auth)));
+        String token = jwtTokenUtil.generateToken(auth);
+        return ResponseEntity.ok(new LoginResponse(token, profileService.getProfile()));
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserDocument> saveUser(@RequestBody UserDTO user) {
-        return ResponseEntity.ok(userDetailsService.save(user));
+        return ResponseEntity.ok(userDetailsService.create(user));
     }
 
     private Authentication authenticate(String email, String password) throws Exception {

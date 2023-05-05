@@ -27,10 +27,13 @@ public class JwtUserDetailsService implements UserDetailsService {
                 AuthorityUtils.createAuthorityList("ROLE_USER"));
     }
 
-    public UserDocument save(UserDTO user) {
-        var newUser = new UserDocument();
-        newUser.setEmail(user.getEmail());
-        newUser.setPassword(bcryptEncoder.encode(user.getPassword()));
+    public UserDocument create(UserDTO user) {
+        var newUser = UserDocument.builder()
+                .fullName(user.getFullName())
+                .rut(user.getRut())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .password(bcryptEncoder.encode(user.getPassword())).build();
         return userRepository.save(newUser);
     }
 }

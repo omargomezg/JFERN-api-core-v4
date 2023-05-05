@@ -33,13 +33,21 @@ public class ApiCoreApplication implements CommandLineRunner {
             userRepository.deleteAll();
             placeRepository.deleteAll();
 
-            var newUser = UserDocument.builder()
+            userRepository.save(UserDocument.builder()
+                    .rut("14081226-9")
                     .email("omar.fdo.gomez@gmail.com")
                     .role(RoleEnum.ADMINISTRATOR)
                     .fullName("Omar Gomez")
                     .password(bcryptEncoder.encode("samsungMac"))
-                    .build();
-            userRepository.save(newUser);
+                    .build());
+
+            userRepository.save(UserDocument.builder()
+                    .rut("15302615-7")
+                    .email("blankitta@gmail.com")
+                    .role(RoleEnum.CUSTOMER)
+                    .fullName("Blanca Pinot")
+                    .password(bcryptEncoder.encode("samsungMac"))
+                    .build());
 
             var place = PlaceDocument.builder()
                     .country("Valdivia")
