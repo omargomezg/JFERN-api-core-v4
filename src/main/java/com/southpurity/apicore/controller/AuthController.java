@@ -32,7 +32,7 @@ public class AuthController {
         final Authentication auth = authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
         SecurityContextHolder.getContext().setAuthentication(auth);
         String token = jwtTokenUtil.generateToken(auth);
-        return ResponseEntity.ok(new LoginResponse(token, profileService.getProfile()));
+        return ResponseEntity.ok(new LoginResponse(token, profileService.get()));
     }
 
     @PostMapping("/register")

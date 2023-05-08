@@ -9,7 +9,10 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class ProfileResponse {
+    private String id;
     private String rut;
+    private String email;
     private String fullName;
-    private RoleEnum role;
+    private String telephone;
+    private String address;
 }

@@ -29,6 +29,8 @@ public class UserDocument {
     @MongoId
     private String id;
 
+    private String telephone;
+
     private RoleEnum role;
 
     private String rut;
