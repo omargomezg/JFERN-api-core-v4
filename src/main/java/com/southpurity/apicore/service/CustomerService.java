@@ -1,14 +1,15 @@
 package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.customer.CustomerPlaceRequest;
+import com.southpurity.apicore.dto.customer.MyAddressResponse;
 import com.southpurity.apicore.dto.customer.MyOrderResponseDTO;
-import com.southpurity.apicore.model.AddressDocument;
-import com.southpurity.apicore.model.OrderDocument;
-import com.southpurity.apicore.model.PlaceDocument;
-import com.southpurity.apicore.model.UserDocument;
-import com.southpurity.apicore.repository.OrderRepository;
-import com.southpurity.apicore.repository.PlaceRepository;
-import com.southpurity.apicore.repository.UserRepository;
+import com.southpurity.apicore.persistence.model.AddressDocument;
+import com.southpurity.apicore.persistence.model.OrderDocument;
+import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
+import com.southpurity.apicore.persistence.repository.OrderRepository;
+import com.southpurity.apicore.persistence.repository.PlaceRepository;
+import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,32 +29,50 @@ public class CustomerService {
     private final PlaceRepository placeRepository;
 
     public List<MyOrderResponseDTO> getMyOrders() {
-        return getMyData().getOrders().stream().map(this::orderDocumentToDTO).collect(Collectors.toList());
+        return getMyData()
+                .getOrders().stream()
+                .map(this::orderDocumentToDTO).collect(Collectors.toList());
     }
 
-    public List<PlaceDocument> getMyPlaces() {
+    public List<MyAddressResponse> getMyPlaces() {
         var user = getMyData();
-        if (user.getAddresses() == null){
-            return new ArrayList<>();
-        }
         return user.getAddresses().stream()
-                .filter(Objects::nonNull)
-                .map(address -> placeRepository.findById(address.getPlaceId()).orElseThrow())
+                .map(this::placeDocumentToMyAddressResponse)
                 .collect(Collectors.toList());
     }
 
-    public void addPlace(CustomerPlaceRequest customerPlace){
-        placeRepository.findById(customerPlace.getIdPlace()).orElseThrow();
+    private MyAddressResponse placeDocumentToMyAddressResponse(AddressDocument place) {
+        return MyAddressResponse.builder()
+                .id(place.getPlace().getId())
+                .fullAddress(place.fullAddress())
+                .isPrimary(place.getIsPrincipal())
+                .build();
+    }
+
+    public int getAvailableWaterDrums(String place) {
+        var placeDocument = placeRepository.findById(place).orElseThrow();
+        return orderRepository.findAllByPlaceAndStatus(placeDocument, OrderStatusEnum.AVAILABLE)
+                .size();
+    }
+
+    public void addPlace(CustomerPlaceRequest customerPlace) {
+        var place = placeRepository.findById(customerPlace.getIdPlace()).orElseThrow();
         var user = getMyData();
-        user.getAddresses().add(AddressDocument.builder()
-                        .placeId(customerPlace.getIdPlace())
+        user.getAddresses().add(
+                AddressDocument.builder()
+                        .place(place)
                         .address(customerPlace.getAddress())
-                .build());
+                        .isPrincipal(customerPlace.getIsPrincipal())
+                        .build());
         userRepository.save(user);
     }
 
     protected MyOrderResponseDTO orderDocumentToDTO(OrderDocument order) {
-        return MyOrderResponseDTO.builder().id(order.getId()).correlative(order.getCorrelative()).build();
+        return MyOrderResponseDTO.builder()
+                .id(order.getId())
+                .address(String.format("%, %", order.getPlace().getAddress(), order.getPlace().getCountry()))
+                .date(order.getCreatedDate())
+                .build();
     }
 
     private UserDocument getMyData() {

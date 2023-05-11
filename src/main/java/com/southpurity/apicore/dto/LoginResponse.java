@@ -1,7 +1,6 @@
 package com.southpurity.apicore.dto;
 
 import com.southpurity.apicore.dto.profile.ProfileResponse;
-import com.southpurity.apicore.model.constant.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

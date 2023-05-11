@@ -1,14 +1,16 @@
 package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.administrator.PlaceResponseDTO;
-import com.southpurity.apicore.model.PlaceDocument;
-import com.southpurity.apicore.model.UserDocument;
-import com.southpurity.apicore.model.constant.RoleEnum;
-import com.southpurity.apicore.repository.PlaceRepository;
-import com.southpurity.apicore.repository.UserRepository;
+import com.southpurity.apicore.dto.administrator.UserDTO;
+import com.southpurity.apicore.persistence.model.PlaceDocument;
+import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.persistence.model.constant.RoleEnum;
+import com.southpurity.apicore.persistence.repository.PlaceRepository;
+import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,8 +34,24 @@ public class AdministratorService {
         return placeDocumentToDTO(placeRepository.save(place));
     }
 
-    public List<UserDocument> getAllUsers(RoleEnum role) {
-        return userRepository.findAllByRole(role);
+    public List<UserDTO> getAllUsers(RoleEnum role) {
+        return userRepository.findAllByRole(role).stream()
+                .map(user -> UserDTO.builder()
+                        .id(user.getId())
+                        .rut(user.getRut())
+                        .fullName(user.getFullName())
+                        .telephone(user.getTelephone())
+                        .email(user.getEmail())
+                        .role(user.getRole())
+                        .status(user.getStatus())
+                        .fullAddress("")
+                        .build())
+                .collect(Collectors.toList());
+
+    }
+
+    protected List<String> getAddress(UserDocument user) {
+        return new ArrayList<>();
     }
 
     protected PlaceResponseDTO placeDocumentToDTO(PlaceDocument place) {

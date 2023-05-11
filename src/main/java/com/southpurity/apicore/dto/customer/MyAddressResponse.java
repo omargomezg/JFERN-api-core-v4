@@ -3,13 +3,10 @@ package com.southpurity.apicore.dto.customer;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
 @Builder
-public class MyOrderResponseDTO {
+public class MyAddressResponse {
     private String id;
-    private String address;
-
-    private Date date;
+    private String fullAddress;
+    private Boolean isPrimary;
 }

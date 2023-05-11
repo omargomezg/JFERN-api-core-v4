@@ -1,6 +1,6 @@
-package com.southpurity.apicore.repository;
+package com.southpurity.apicore.persistence.repository;
 
-import com.southpurity.apicore.model.PlaceDocument;
+import com.southpurity.apicore.persistence.model.PlaceDocument;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

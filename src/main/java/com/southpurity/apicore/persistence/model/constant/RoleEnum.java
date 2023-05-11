@@ -1,4 +1,4 @@
-package com.southpurity.apicore.model.constant;
+package com.southpurity.apicore.persistence.model.constant;
 
 public enum RoleEnum {
     ADMINISTRATOR,

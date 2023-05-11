@@ -3,7 +3,7 @@ package com.southpurity.apicore.controller;
 import com.southpurity.apicore.config.JwtTokenService;
 import com.southpurity.apicore.dto.LoginResponse;
 import com.southpurity.apicore.dto.UserDTO;
-import com.southpurity.apicore.model.UserDocument;
+import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.service.JwtUserDetailsService;
 import com.southpurity.apicore.service.ProfileService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.southpurity.apicore.dto;
 
-import com.southpurity.apicore.model.constant.RoleEnum;
+import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -21,4 +21,7 @@ public class CustomerPlaceRequest {
      */
     @NotEmpty
     private String address;
+
+    @Builder.Default
+    private Boolean isPrincipal = false;
 }

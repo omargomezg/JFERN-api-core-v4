@@ -1,7 +1,8 @@
 package com.southpurity.apicore.controller;
 
-import com.southpurity.apicore.model.PlaceDocument;
-import com.southpurity.apicore.repository.PlaceRepository;
+import com.southpurity.apicore.dto.customer.MyAddressResponse;
+import com.southpurity.apicore.persistence.model.PlaceDocument;
+import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class PlaceController {
     }
 
     @GetMapping("/place/customer")
-    public ResponseEntity<List<PlaceDocument>> getUserPlaces() {
+    public ResponseEntity<List<MyAddressResponse>> getUserPlaces() {
         return ResponseEntity.ok(customerService.getMyPlaces());
     }
 

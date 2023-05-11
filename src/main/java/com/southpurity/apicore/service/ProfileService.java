@@ -1,9 +1,10 @@
 package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.profile.ProfileResponse;
-import com.southpurity.apicore.model.UserDocument;
-import com.southpurity.apicore.repository.PlaceRepository;
-import com.southpurity.apicore.repository.UserRepository;
+import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.persistence.model.constant.RoleEnum;
+import com.southpurity.apicore.persistence.repository.PlaceRepository;
+import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,19 +22,24 @@ public class ProfileService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final UserDetails user = (UserDetails) authentication.getPrincipal();
         var userDocumento = userRepository.findByEmail(user.getUsername()).orElseThrow();
-        String fillAddress = "";
-        var place = placeRepository.findById(userDocumento.getAddresses().get(0).getPlaceId());
-        if (place.isPresent()) {
-            fillAddress = String.format("%s, %s",
-                    place.get().getAddress(), userDocumento.getAddresses().get(0).getAddress());
-        }
+        var address = new StringBuilder();
+        userDocumento.getAddresses().stream()
+                .filter(place-> place.getIsPrincipal())
+                .findFirst()
+                .ifPresent(place -> address
+                        .append(place.getPlace().getAddress())
+                        .append(", ")
+                        .append(place.getAddress())
+                        .append(". ")
+                        .append(place.getPlace().getCountry()));
         return ProfileResponse.builder()
                 .id(userDocumento.getId())
                 .rut(userDocumento.getRut())
                 .email(user.getUsername())
                 .telephone(userDocumento.getTelephone())
+                .role(userDocumento.getRole())
                 .fullName(userDocumento.getFullName())
-                .address(fillAddress)
+                .address(address.toString())
                 .build();
     }
 
