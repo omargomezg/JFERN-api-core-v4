@@ -1,5 +1,7 @@
 package com.southpurity.apicore.persistence.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.southpurity.apicore.controller.View;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,11 +20,14 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PlaceDocument {
+
     @MongoId
     private String id;
+
     private String country;
+
     private String address;
 
     @CreatedDate
-    private Date date;
+    private Date createdDate;
 }

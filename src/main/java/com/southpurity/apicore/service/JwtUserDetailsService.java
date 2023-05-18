@@ -1,7 +1,6 @@
 package com.southpurity.apicore.service;
 
-import com.southpurity.apicore.dto.administrator.UserDTO;
-import com.southpurity.apicore.persistence.model.AddressDocument;
+import com.southpurity.apicore.dto.UserDTO;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
@@ -25,9 +24,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-                AuthorityUtils.createAuthorityList("ROLE_USER"));
+        return (UserDetails) userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
+        /*return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_USER"));*/
     }
 
     public UserDocument create(com.southpurity.apicore.dto.UserDTO user) {
@@ -42,16 +41,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     public UserDTO get(String id) {
         var user = userRepository.findById(id).orElseThrow();
-        return UserDTO.builder()
-                .id(user.getId())
-                .rut(user.getRut())
-                .email(user.getEmail())
-                .status(user.getStatus())
-                .role(user.getRole())
-                .fullName(user.getFullName())
-                .fullAddress(user.getAddresses().stream()
-                        .filter(AddressDocument::getIsPrincipal).findFirst().get().fullAddress())
-                .build();
+        return conversionService.convert(user, UserDTO.class);
     }
 
     public void update(UserDTO userDTO) {
