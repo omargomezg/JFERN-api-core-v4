@@ -42,7 +42,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity
                 .cors().configurationSource(request -> {
                     var cors = new CorsConfiguration();
-                    cors.setAllowedOrigins(List.of("http://localhost:4200", "http://qweqwewqeq.us-east-2.elasticbeanstalk.com"));
+                    cors.setAllowedOrigins(List.of("http://localhost:4200", "http://front-purity.s3-website.us-east-2.amazonaws.com"));
                     cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
