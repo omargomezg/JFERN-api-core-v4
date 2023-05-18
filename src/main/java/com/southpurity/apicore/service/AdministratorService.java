@@ -1,7 +1,7 @@
 package com.southpurity.apicore.service;
 
-import com.southpurity.apicore.dto.administrator.PlaceResponseDTO;
-import com.southpurity.apicore.dto.administrator.UserDTO;
+import com.southpurity.apicore.dto.PlaceDTO;
+import com.southpurity.apicore.dto.UserDTO;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
@@ -21,12 +21,12 @@ public class AdministratorService {
     private final PlaceRepository placeRepository;
     private final UserRepository userRepository;
 
-    public List<PlaceResponseDTO> getAllPlaces() {
+    public List<PlaceDTO> getAllPlaces() {
         return placeRepository.findAll().stream().map(this::placeDocumentToDTO)
                 .collect(Collectors.toList());
     }
 
-    public PlaceResponseDTO savePlace(PlaceDocument place) {
+    public PlaceDTO savePlace(PlaceDocument place) {
         var placeFound = placeRepository.findById(place.getId());
         if (placeFound.isEmpty()) {
             place.setId(null);
@@ -44,7 +44,7 @@ public class AdministratorService {
                         .email(user.getEmail())
                         .role(user.getRole())
                         .status(user.getStatus())
-                        .fullAddress("")
+                        //.fullAddress("")
                         .build())
                 .collect(Collectors.toList());
 
@@ -54,8 +54,8 @@ public class AdministratorService {
         return new ArrayList<>();
     }
 
-    protected PlaceResponseDTO placeDocumentToDTO(PlaceDocument place) {
-        return PlaceResponseDTO.builder()
+    protected PlaceDTO placeDocumentToDTO(PlaceDocument place) {
+        return PlaceDTO.builder()
                 .id(place.getId())
                 .address(place.getAddress())
                 .build();

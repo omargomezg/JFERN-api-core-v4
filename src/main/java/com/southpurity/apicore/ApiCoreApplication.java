@@ -4,7 +4,6 @@ import com.southpurity.apicore.persistence.model.ConfigurationDocument;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
-import com.southpurity.apicore.persistence.model.constant.UserStatusEnum;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
@@ -15,6 +14,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.mongodb.config.EnableReactiveMongoAuditing;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
@@ -51,6 +51,14 @@ public class ApiCoreApplication implements CommandLineRunner {
             userRepository.save(UserDocument.builder()
                     .rut("15302615-7")
                     .email("blankitta@gmail.com")
+                    .role(RoleEnum.CUSTOMER)
+                    .fullName("Blanca Pinot")
+                    .password(bcryptEncoder.encode("samsungMac"))
+                    .build());
+
+            userRepository.save(UserDocument.builder()
+                    .rut("99999999-9")
+                    .email("omar.gomez@outlook.com")
                     .role(RoleEnum.CUSTOMER)
                     .fullName("Blanca Pinot")
                     .password(bcryptEncoder.encode("samsungMac"))
