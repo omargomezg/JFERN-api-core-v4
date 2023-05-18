@@ -6,15 +6,14 @@ phases:
   pre_build:
     commands:
       - echo In the pre_build phase...
-      - mvn test
   build:
     commands:
       - echo Build completed on `date`
-      - mvn package
+      - gradle build
   post_build:
     commands:
       - echo Build completed on `data`
 artifacts:
   files:
-    - target/*.jar
+    - build/libs/*.jar
   discard-paths: yes
