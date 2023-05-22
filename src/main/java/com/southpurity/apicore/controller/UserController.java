@@ -46,4 +46,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PutMapping("/{id}/password")
+    public ResponseEntity<UserDTO> updatePassword(@PathVariable String id, @RequestBody UserDTO user) {
+        user.setId(id);
+        return ResponseEntity.ok(userService.updatePassword(user));
+    }
+
 }
