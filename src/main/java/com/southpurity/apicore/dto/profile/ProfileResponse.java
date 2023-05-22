@@ -11,7 +11,7 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class ProfileResponse {
-    @JsonView(View.Administrator.class)
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String id;
 
     @JsonView({View.Customer.class, View.Stocker.class})

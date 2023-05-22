@@ -13,5 +13,7 @@ public interface UserService {
 
     UserDTO create(UserDTO userDTO);
 
+    UserDTO updatePassword(UserDTO userDTO);
+
     UserDTO findById(String id);
 }

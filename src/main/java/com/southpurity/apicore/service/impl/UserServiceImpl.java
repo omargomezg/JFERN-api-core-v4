@@ -48,6 +48,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO updatePassword(UserDTO userDTO) {
+        var user = userRepository.findById(userDTO.getId()).orElseThrow();
+        user.setPassword(bcryptEncoder.encode(userDTO.getPassword()));
+        return modelMapper.map(userRepository.save(user), UserDTO.class);
+    }
+
+    @Override
     public UserDTO findById(String id) {
         var user = userRepository.findById(id);
         return user.map(userDocument -> conversionService.convert(userDocument, UserDTO.class)).orElse(null);
