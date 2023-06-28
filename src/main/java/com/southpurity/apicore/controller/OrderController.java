@@ -1,6 +1,6 @@
 package com.southpurity.apicore.controller;
 
-import com.southpurity.apicore.service.OrderService;
+import com.southpurity.apicore.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderService orderService;
+    private final ProductService productService;
 
     @GetMapping
     public ResponseEntity<?> getOrders(@RequestParam String place, Pageable pageable) {
-        return ResponseEntity.ok(orderService.getAllAvailable(place, pageable));
+        return ResponseEntity.ok(productService.getAllAvailable(place, pageable));
     }
 }

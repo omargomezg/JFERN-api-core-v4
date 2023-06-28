@@ -5,16 +5,16 @@ import com.southpurity.apicore.controller.View;
 import lombok.Data;
 
 @Data
-public class OrderDTO {
+public class ProductDTO {
 
     @JsonView(View.Administrator.class)
     private String id;
 
     @JsonView(View.Customer.class)
-    private Integer lockNumber;
+    private String lockNumber;
 
     @JsonView(View.Customer.class)
-    private Integer padlockKey;
+    private String padlockKey;
 
     @JsonView(View.Customer.class)
     private String place;

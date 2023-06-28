@@ -1,15 +1,15 @@
 package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.dto.administrator.ConfigurationDTO;
-import com.southpurity.apicore.dto.OrderDTO;
+import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.dto.PlaceDTO;
 import com.southpurity.apicore.dto.UserDTO;
-import com.southpurity.apicore.persistence.model.OrderDocument;
+import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.service.AdministratorService;
 import com.southpurity.apicore.service.ConfigurationService;
 import com.southpurity.apicore.service.JwtUserDetailsService;
-import com.southpurity.apicore.service.OrderService;
+import com.southpurity.apicore.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +29,7 @@ public class AdministratorController {
 
     private final AdministratorService administratorService;
     private final ConfigurationService configurationService;
-    private final OrderService orderService;
+    private final ProductService productService;
     private final JwtUserDetailsService userDetailsService;
 
     @PostMapping("/place")
@@ -61,9 +61,9 @@ public class AdministratorController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/order")
-    public ResponseEntity<OrderDocument> createOrder(@RequestBody OrderDTO order) {
-        return ResponseEntity.ok(orderService.create(order));
+    @PostMapping("/product")
+    public ResponseEntity<ProductDocument> createOrder(@RequestBody ProductDTO order) {
+        return ResponseEntity.ok(productService.create(order));
     }
 
 }

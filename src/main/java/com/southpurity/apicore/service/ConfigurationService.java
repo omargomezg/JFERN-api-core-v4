@@ -20,6 +20,7 @@ public class ConfigurationService {
     public void update(ConfigurationDTO configurationDTO){
         var configuration = configurationRepository.findAll().stream().findFirst().orElseThrow();
         configuration.setPrice(configurationDTO.getPrice());
+        configuration.setPriceWithDrum(configurationDTO.getPriceWithDrum());
         configurationRepository.save(configuration);
     }
 }

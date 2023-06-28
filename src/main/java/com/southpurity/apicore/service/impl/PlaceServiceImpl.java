@@ -3,7 +3,7 @@ package com.southpurity.apicore.service.impl;
 import com.southpurity.apicore.dto.PlaceDTO;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
-import com.southpurity.apicore.persistence.repository.OrderRepository;
+import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class PlaceServiceImpl implements PlaceService {
 
     private final PlaceRepository placeRepository;
-    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -29,7 +29,7 @@ public class PlaceServiceImpl implements PlaceService {
 
     protected PlaceDTO convertToDTO(PlaceDocument place) {
         var placeDTO = modelMapper.map(place, PlaceDTO.class);
-        placeDTO.setPadlocks(orderRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE).size());
+        placeDTO.setPadlocks(productRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE).size());
         return placeDTO;
     }
 
