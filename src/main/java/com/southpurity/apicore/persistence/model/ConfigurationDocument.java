@@ -2,15 +2,35 @@ package com.southpurity.apicore.persistence.model;
 
 import lombok.Builder;
 import lombok.Data;
-import org.bson.types.Decimal128;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
+
+/**
+ * Registro de la configuración global de la aplicación
+ */
 @Document("configuration")
-@Builder
 @Data
-public class ConfigurationDocument {
-    @MongoId
-    private String id;
-    private Decimal128 price;
+@Builder
+@EqualsAndHashCode(callSuper = true)
+public class ConfigurationDocument extends BaseDocument {
+    /**
+     * Nombre del sitio
+     */
+    private String siteName;
+
+    /**
+     * Url de retorno para pago online
+     */
+    private String returnUrl;
+
+    /**
+     * Valor de recarga
+     */
+    private Integer price;
+
+    /**
+     * Valor de bidón más recarga
+     */
+    private Integer priceWithDrum;
 }

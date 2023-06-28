@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.profile.ProfileResponse;
+import com.southpurity.apicore.persistence.model.AddressDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
@@ -24,7 +25,7 @@ public class ProfileService {
         var userDocumento = userRepository.findByEmail(user.getUsername()).orElseThrow();
         var address = new StringBuilder();
         userDocumento.getAddresses().stream()
-                .filter(place-> place.getIsPrincipal())
+                .filter(AddressDocument::getIsPrincipal)
                 .findFirst()
                 .ifPresent(place -> address
                         .append(place.getPlace().getAddress())

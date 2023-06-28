@@ -1,5 +1,6 @@
 package com.southpurity.apicore.controller;
 
+import com.southpurity.apicore.dto.AvailableDrums;
 import com.southpurity.apicore.dto.customer.CustomerPlaceRequest;
 import com.southpurity.apicore.dto.customer.MyOrderResponseDTO;
 import com.southpurity.apicore.service.ConfigurationService;
@@ -37,12 +38,12 @@ public class CustomerController {
     }
 
     @GetMapping("/water-drums/{id}/available")
-    public ResponseEntity<Integer> availableWaterDrums(@PathVariable String id) {
+    public ResponseEntity<AvailableDrums> availableWaterDrums(@PathVariable String id) {
         return ResponseEntity.ok(customerService.getAvailableWaterDrums(id));
     }
 
     @GetMapping("/water-drums/price")
-    public ResponseEntity<Decimal128> priceWaterDrums() {
+    public ResponseEntity<Integer> priceWaterDrums() {
         var configuration = configurationService.get();
         return ResponseEntity.ok(configuration.getPrice());
     }

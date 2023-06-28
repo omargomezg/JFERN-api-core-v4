@@ -13,7 +13,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,9 +29,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDocument implements UserDetails {
-
-    @DocumentReference
-    private List<OrderDocument> orders;
 
     private List<AddressDocument> addresses = new ArrayList<>();
 

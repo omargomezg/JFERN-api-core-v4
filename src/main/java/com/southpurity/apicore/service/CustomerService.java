@@ -1,13 +1,15 @@
 package com.southpurity.apicore.service;
 
+import com.southpurity.apicore.dto.AvailableDrums;
 import com.southpurity.apicore.dto.customer.CustomerPlaceRequest;
 import com.southpurity.apicore.dto.customer.MyAddressResponse;
 import com.southpurity.apicore.dto.customer.MyOrderResponseDTO;
 import com.southpurity.apicore.persistence.model.AddressDocument;
-import com.southpurity.apicore.persistence.model.OrderDocument;
+import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
-import com.southpurity.apicore.persistence.repository.OrderRepository;
+import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
+import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,13 +28,12 @@ import java.util.stream.Collectors;
 public class CustomerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
     private final UserRepository userRepository;
-    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
     private final PlaceRepository placeRepository;
+    private final ConfigurationRepository configurationRepository;
 
     public List<MyOrderResponseDTO> getMyOrders() {
-        return getMyData()
-                .getOrders().stream()
-                .map(this::orderDocumentToDTO).collect(Collectors.toList());
+        return new ArrayList<>();
     }
 
     public List<MyAddressResponse> getMyPlaces() {
@@ -49,10 +51,16 @@ public class CustomerService {
                 .build();
     }
 
-    public int getAvailableWaterDrums(String place) {
+    public AvailableDrums getAvailableWaterDrums(String place) {
         var placeDocument = placeRepository.findById(place).orElseThrow();
-        return orderRepository.findAllByPlaceAndStatus(placeDocument, OrderStatusEnum.AVAILABLE)
+        Integer size =  productRepository.findAllByPlaceAndStatus(placeDocument, OrderStatusEnum.AVAILABLE)
                 .size();
+        var configuration = configurationRepository.findBySiteName("southpurity").orElseThrow();
+        return AvailableDrums.builder()
+                .available(size)
+                .priceWithDrum(configuration.getPriceWithDrum())
+                .price(configuration.getPrice())
+                .build();
     }
 
     public void addPlace(CustomerPlaceRequest customerPlace) {
@@ -67,7 +75,7 @@ public class CustomerService {
         userRepository.save(user);
     }
 
-    protected MyOrderResponseDTO orderDocumentToDTO(OrderDocument order) {
+    protected MyOrderResponseDTO orderDocumentToDTO(ProductDocument order) {
         return MyOrderResponseDTO.builder()
                 .id(order.getId())
                 .address(String.format("%, %", order.getPlace().getAddress(), order.getPlace().getCountry()))
