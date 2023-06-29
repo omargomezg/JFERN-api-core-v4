@@ -50,8 +50,7 @@ public class PaymentController {
         var saleOrder = productService.takeOrder(address, cartRequest, profileService.get());
         Amount amount = new Amount();
         amount.setCurrency("CLP");
-        amount.setTotal(saleOrder.getItems().stream().map(item -> item.getPrice() * item.getQuantity())
-                .reduce(0, Integer::sum).toString());
+        amount.setTotal(String.valueOf(saleOrder.getItems().stream().mapToLong(item -> item.getPrice() * item.getQuantity()).sum()));
         Person buyer = new Person();
         buyer.setDocumentType("CLRUT");
         buyer.setDocument(profileService.get().getRut());

@@ -1,5 +1,9 @@
 package com.southpurity.apicore;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.southpurity.apicore.persistence.model.ConfigurationDocument;
 import com.southpurity.apicore.persistence.model.KangooJumps;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
@@ -15,14 +19,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 @SpringBootApplication
 @EnableMongoAuditing
+@EnableScheduling
 @RequiredArgsConstructor
 public class ApiCoreApplication implements CommandLineRunner {
 
@@ -38,6 +47,25 @@ public class ApiCoreApplication implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication.run(ApiCoreApplication.class, args);
+    }
+
+    @Bean
+    public SimpleModule springDataPageModule() {
+        return new SimpleModule().addSerializer(Page.class, new JsonSerializer<Page>() {
+            @Override
+            public void serialize(Page value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                gen.writeStartObject();
+                gen.writeNumberField("totalElements",value.getTotalElements());
+                gen.writeNumberField("totalPages", value.getTotalPages());
+                gen.writeNumberField("number", value.getNumber());
+                gen.writeNumberField("size", value.getSize());
+                gen.writeBooleanField("first", value.isFirst());
+                gen.writeBooleanField("last", value.isLast());
+                gen.writeFieldName("content");
+                serializers.defaultSerializeValue(value.getContent(),gen);
+                gen.writeEndObject();
+            }
+        });
     }
 
     @Override
