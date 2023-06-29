@@ -1,5 +1,6 @@
 package com.southpurity.apicore.persistence.repository;
 
+import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import org.springframework.data.domain.Page;
@@ -14,5 +15,7 @@ public interface SaleOrderRepository extends MongoRepository<SaleOrderDocument, 
     List<SaleOrderDocument> findByClient(UserDocument user);
 
     Page<SaleOrderDocument> findAllByClient(UserDocument user, Pageable pageable);
+
+    List<SaleOrderDocument> findAllByStatus(SaleOrderStatusEnum status);
 
 }

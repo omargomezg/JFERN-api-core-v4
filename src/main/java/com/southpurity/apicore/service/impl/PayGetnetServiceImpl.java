@@ -87,10 +87,25 @@ public class PayGetnetServiceImpl implements PayService {
                 .build();
     }
 
-    @Scheduled()
+    /**
+     * Every 24 hours, the system will check for pending payments and will update the status of the sale order
+     */
+    @Scheduled(fixedDelay = 86400000)
     @Override
-    public void scheduled() {
+    public void scheduledTaskForPendings() {
+        var saleOrders = saleOrderRepository.findAllByStatus(SaleOrderStatusEnum.PENDING);
+        saleOrders.forEach(saleOrder -> {
+            PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
+            if (saleOrder.getPaymentDetail() != null) {
+                var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+                addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+            }
+        });
+    }
 
+    @Override
+    public void updatePendingPayments() {
+        this.scheduledTaskForPendings();
     }
 
     private Key productToKey(ProductDocument product) {
