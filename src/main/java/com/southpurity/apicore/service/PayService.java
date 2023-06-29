@@ -10,4 +10,6 @@ public interface PayService {
 
     PaymentResponse getPaymentStatus(String saleOrderId);
 
+    void scheduled();
+
 }

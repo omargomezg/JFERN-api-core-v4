@@ -1,5 +1,7 @@
 package com.southpurity.apicore.persistence.model.saleorder;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.CurrencyEnum;
 import lombok.Builder;
 import lombok.Data;
@@ -9,11 +11,16 @@ import lombok.Data;
 @Builder
 public class ItemDocument {
 
-    private Integer quantity;
+    @JsonView(View.Customer.class)
+    private Long quantity;
 
+    @JsonView(View.Customer.class)
     private String name;
-    private Integer price;
+
+    @JsonView(View.Customer.class)
+    private Long price;
 
     @Builder.Default
+    @JsonView(View.Customer.class)
     private CurrencyEnum money = CurrencyEnum.CLP;
 }

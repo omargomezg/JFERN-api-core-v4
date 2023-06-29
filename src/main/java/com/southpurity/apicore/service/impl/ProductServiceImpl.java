@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -61,10 +62,10 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public SaleOrderDocument takeOrder(String addressId, List<CartRequest> cartRequest, ProfileResponse profile) {
-        var quantity = cartRequest.stream().mapToInt(CartRequest::getQuantity).sum();
+        var quantity = cartRequest.stream().mapToLong(CartRequest::getQuantity).sum();
         UserDocument user = userRepository.findById(profile.getId()).orElseThrow();
         PlaceDocument place = placeRepository.findById(addressId).orElseThrow();
-        var products = productRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE, Pageable.ofSize(quantity));
+        var products = productRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE, Pageable.ofSize((int) quantity));
         if (products.getContent().size() != quantity) {
             throw new SaleOrderException("No hay productos suficientes.");
         }
@@ -81,6 +82,7 @@ public class ProductServiceImpl implements ProductService {
                 .build()));
         SaleOrderDocument saleOrder = SaleOrderDocument.builder()
                 .client(user)
+                .serial(new Date().getTime())
                 .products(products.getContent())
                 .items(items)
                 .build();
