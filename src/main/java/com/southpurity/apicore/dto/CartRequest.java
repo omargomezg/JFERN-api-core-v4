@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class CartRequest {
-    private Integer quantity;
-    private Integer price;
+    private Long quantity;
+    private Long price;
     private String description;
     private Integer subtotal;
 }

@@ -20,6 +20,7 @@ import com.southpurity.apicore.service.PayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
@@ -84,6 +85,27 @@ public class PayGetnetServiceImpl implements PayService {
                                 .collect(Collectors.toSet()))
                 .paymentStatus(resultQuery.getStatus().getStatus())
                 .build();
+    }
+
+    /**
+     * Every 24 hours, the system will check for pending payments and will update the status of the sale order
+     */
+    @Scheduled(fixedDelay = 86400000)
+    @Override
+    public void scheduledTaskForPendings() {
+        var saleOrders = saleOrderRepository.findAllByStatus(SaleOrderStatusEnum.PENDING);
+        saleOrders.forEach(saleOrder -> {
+            PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
+            if (saleOrder.getPaymentDetail() != null) {
+                var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+                addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+            }
+        });
+    }
+
+    @Override
+    public void updatePendingPayments() {
+        this.scheduledTaskForPendings();
     }
 
     private Key productToKey(ProductDocument product) {

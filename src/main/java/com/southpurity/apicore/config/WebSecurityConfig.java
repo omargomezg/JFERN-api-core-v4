@@ -43,7 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     var cors = new CorsConfiguration();
                     cors.setAllowedOrigins(List.of("http://localhost:4200",
                             "https://www.purezadelsur.cl"));
-                    cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
+                    cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
                 }).and()

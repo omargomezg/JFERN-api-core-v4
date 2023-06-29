@@ -10,4 +10,7 @@ public interface PayService {
 
     PaymentResponse getPaymentStatus(String saleOrderId);
 
+    void scheduledTaskForPendings();
+
+    void updatePendingPayments();
 }
