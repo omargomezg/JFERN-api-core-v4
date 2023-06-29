@@ -12,4 +12,5 @@ public interface PayService {
 
     void scheduledTaskForPendings();
 
+    void updatePendingPayments();
 }

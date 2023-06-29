@@ -103,6 +103,11 @@ public class PayGetnetServiceImpl implements PayService {
         });
     }
 
+    @Override
+    public void updatePendingPayments() {
+        this.scheduledTaskForPendings();
+    }
+
     private Key productToKey(ProductDocument product) {
         return Key.builder()
                 .key(product.getLockNumber())
