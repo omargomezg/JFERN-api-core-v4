@@ -1,6 +1,6 @@
 package com.southpurity.apicore.service.impl;
 
-import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
+import com.southpurity.apicore.dto.PaymentResponse;
 import com.southpurity.apicore.exception.PaymentException;
 import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
@@ -16,7 +16,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -65,12 +67,12 @@ class PayGetnetServiceImplTest {
     @Disabled
     @Test
     void getPaymentStatus_isNOk() {
-        PaymentDetail paymentDetail= new PaymentDetail();
+        PaymentDetail paymentDetail = new PaymentDetail();
         SaleOrderDocument saleOrder = SaleOrderDocument.builder()
                 .paymentDetail(paymentDetail)
                 .build();
         when(saleOrderRepository.findById(any())).thenReturn(Optional.of(saleOrder));
-        RedirectInformation result = payGetnetService.getPaymentStatus("123");
+        PaymentResponse result = payGetnetService.getPaymentStatus("123");
         assertNotNull(result);
     }
 }

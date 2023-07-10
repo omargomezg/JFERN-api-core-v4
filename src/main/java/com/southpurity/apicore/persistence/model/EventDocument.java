@@ -1,5 +1,6 @@
 package com.southpurity.apicore.persistence.model;
 
+import lombok.Builder;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -13,6 +14,8 @@ public class EventDocument {
     private String title;
     private Date start;
     private Date end;
+
+    @Builder.Default
     private Boolean allDay = false;
     private Byte capacity;
 

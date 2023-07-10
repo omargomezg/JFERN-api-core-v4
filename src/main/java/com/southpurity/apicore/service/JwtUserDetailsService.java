@@ -29,14 +29,10 @@ public class JwtUserDetailsService implements UserDetailsService {
                 AuthorityUtils.createAuthorityList("ROLE_USER"));*/
     }
 
-    public UserDocument create(com.southpurity.apicore.dto.UserDTO user) {
-        var newUser = UserDocument.builder()
-                .fullName(user.getFullName())
-                .rut(user.getRut())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .password(bcryptEncoder.encode(user.getPassword())).build();
-        return userRepository.save(newUser);
+    public UserDocument create(UserDocument user) {
+        var encodedPassword = bcryptEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+        return userRepository.save(user);
     }
 
     public UserDTO get(String id) {

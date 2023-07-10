@@ -30,6 +30,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UserDocument implements UserDetails {
 
+    @Builder.Default
     private List<AddressDocument> addresses = new ArrayList<>();
 
     @Id
@@ -43,6 +44,10 @@ public class UserDocument implements UserDetails {
 
     @Indexed(unique = true)
     private String email;
+
+    private String city;
+
+    private String address;
 
     private String password;
 

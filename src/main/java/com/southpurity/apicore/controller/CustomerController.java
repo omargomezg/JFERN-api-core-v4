@@ -6,7 +6,6 @@ import com.southpurity.apicore.dto.customer.MyOrderResponseDTO;
 import com.southpurity.apicore.service.ConfigurationService;
 import com.southpurity.apicore.service.CustomerService;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.Decimal128;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,11 +34,6 @@ public class CustomerController {
     public ResponseEntity<?> addPlace(@Valid @RequestBody CustomerPlaceRequest customerPlace) {
         customerService.addPlace(customerPlace);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/water-drums/{id}/available")
-    public ResponseEntity<AvailableDrums> availableWaterDrums(@PathVariable String id) {
-        return ResponseEntity.ok(customerService.getAvailableWaterDrums(id));
     }
 
     @GetMapping("/water-drums/price")

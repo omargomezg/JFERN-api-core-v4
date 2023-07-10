@@ -58,6 +58,8 @@ public class PayGetnetServiceImpl implements PayService {
                     .build();
         } else {
             // There was some error so check the message and log it
+            log.error(request.getIpAddress());
+            log.error(request.getUserAgent());
             throw new PaymentException(response.getStatus().getMessage());
         }
     }

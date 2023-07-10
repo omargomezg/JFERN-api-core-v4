@@ -41,9 +41,11 @@ public class UserDTO {
     @JsonView(View.Customer.class)
     private String fullAddress;
 
+    @Builder.Default
     @JsonView({View.Stocker.class, View.Customer.class})
     private RoleEnum role = RoleEnum.CUSTOMER;
 
+    @Builder.Default
     @JsonView({View.Stocker.class, View.Customer.class})
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
 }
