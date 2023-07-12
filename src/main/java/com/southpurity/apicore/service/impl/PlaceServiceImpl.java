@@ -27,6 +27,11 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<PlaceDocument> finaAll() {
+        return placeRepository.findAll();
+    }
+
     protected PlaceDTO convertToDTO(PlaceDocument place) {
         var placeDTO = modelMapper.map(place, PlaceDTO.class);
         placeDTO.setPadlocks(productRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE).size());

@@ -22,12 +22,19 @@ import java.util.Date;
 public class PlaceDocument {
 
     @MongoId
+    @JsonView(View.Anonymous.class)
     private String id;
 
+    @JsonView(View.Anonymous.class)
     private String country;
 
+    @JsonView(View.Anonymous.class)
     private String address;
 
+    @JsonView(View.Administrator.class)
+    private Short availableStock;
+
     @CreatedDate
+    @JsonView(View.Administrator.class)
     private Date createdDate;
 }

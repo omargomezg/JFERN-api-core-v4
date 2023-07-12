@@ -36,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDocument> saveUser(@RequestBody UserDTO user) {
+    public ResponseEntity<UserDocument> saveUser(@RequestBody UserDocument user) {
         return ResponseEntity.ok(userDetailsService.create(user));
     }
 

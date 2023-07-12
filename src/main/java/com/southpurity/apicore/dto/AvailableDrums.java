@@ -9,12 +9,12 @@ import lombok.Data;
 @Builder
 public class AvailableDrums {
 
-    @JsonView(View.Customer.class)
+    @JsonView(View.Anonymous.class)
     private Integer available;
 
-    @JsonView(View.Customer.class)
+    @JsonView(View.Anonymous.class)
     private Integer price;
 
-    @JsonView(View.Customer.class)
+    @JsonView(View.Anonymous.class)
     private Integer priceWithDrum;
 }

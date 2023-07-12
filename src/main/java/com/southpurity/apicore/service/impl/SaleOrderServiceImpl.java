@@ -56,7 +56,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     private void sumTotal(SaleOrderDocument saleOrder) {
-        var total = saleOrder.getItems().stream().mapToLong(item -> (long) item.getPrice() * item.getQuantity()).sum();
+        var total = saleOrder.getItems().stream().mapToLong(item -> item.getPrice() * item.getQuantity()).sum();
         saleOrder.setTotal(total);
     }
 

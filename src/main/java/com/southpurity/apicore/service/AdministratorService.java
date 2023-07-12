@@ -58,6 +58,7 @@ public class AdministratorService {
         return PlaceDTO.builder()
                 .id(place.getId())
                 .address(place.getAddress())
+                .availableStock(place.getAvailableStock())
                 .build();
     }
 
