@@ -11,6 +11,7 @@ import com.southpurity.apicore.dto.ProductsInPaymentResponse;
 import com.southpurity.apicore.dto.getnet.GetnetRequest;
 import com.southpurity.apicore.exception.PaymentException;
 import com.southpurity.apicore.persistence.model.ProductDocument;
+import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
 import com.southpurity.apicore.persistence.model.saleorder.Key;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
@@ -125,7 +126,14 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private void addPaymentStatusToSaleOrder(RedirectInformation redirectInformation, SaleOrderDocument saleOrder) {
-        saleOrder.setStatus(SaleOrderStatusEnum.valueOf(redirectInformation.getStatus().getStatus()));
+        SaleOrderStatusEnum status = SaleOrderStatusEnum.valueOf(redirectInformation.getStatus().getStatus());
+        saleOrder.setStatus(status);
+        if (status.equals(SaleOrderStatusEnum.REJECTED)) {
+            saleOrder.getProducts().forEach(product -> {
+                product.setStatus(OrderStatusEnum.AVAILABLE);
+                productRepository.save(product);
+            });
+        }
         saleOrderRepository.save(saleOrder);
     }
 

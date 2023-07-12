@@ -31,6 +31,9 @@ public class PlaceDocument {
     @JsonView(View.Anonymous.class)
     private String address;
 
+    @JsonView(View.Administrator.class)
+    private Short availableStock;
+
     @CreatedDate
     @JsonView(View.Administrator.class)
     private Date createdDate;

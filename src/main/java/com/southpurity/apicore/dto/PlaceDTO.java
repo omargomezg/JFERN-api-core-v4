@@ -37,5 +37,8 @@ public class PlaceDTO {
     private int padlocks;
 
     @JsonView(View.Administrator.class)
+    private Short availableStock;
+
+    @JsonView(View.Administrator.class)
     private Date createdDate;
 }
