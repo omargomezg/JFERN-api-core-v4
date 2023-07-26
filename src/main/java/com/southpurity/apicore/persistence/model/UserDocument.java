@@ -1,5 +1,7 @@
 package com.southpurity.apicore.persistence.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import com.southpurity.apicore.persistence.model.constant.UserStatusEnum;
 import lombok.AllArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +45,7 @@ public class UserDocument implements UserDetails {
 
     private String rut;
 
+    @Email(message = "Email should be valid")
     @Indexed(unique = true)
     private String email;
 
@@ -61,6 +65,9 @@ public class UserDocument implements UserDetails {
 
     @LastModifiedDate
     private Date updatedDate;
+
+    @JsonView(View.Anonymous.class)
+    private PasswordReset passwordReset;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

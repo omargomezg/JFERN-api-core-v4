@@ -12,7 +12,7 @@ import com.southpurity.apicore.service.PayService;
 import com.southpurity.apicore.service.ProductService;
 import com.southpurity.apicore.service.ProfileService;
 import com.southpurity.apicore.service.SaleOrderService;
-import com.southpurity.apicore.utils.HttpServletRequestUtil;
+import com.southpurity.apicore.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,8 +67,8 @@ public class PaymentController {
         payment.setAmount(amount);
         payment.setBuyer(buyer);
         GetnetRequest getnetRequest = GetnetRequest.builder()
-                .ipAddress(HttpServletRequestUtil.getIpAddress(httpServletRequest))
-                .userAgent(HttpServletRequestUtil.getUserAgent(httpServletRequest))
+                .ipAddress(Utils.getIpAddress(httpServletRequest))
+                .userAgent(Utils.getUserAgent(httpServletRequest))
                 .returnUrl(
                         configurationService.get().getReturnUrl() + "/" + saleOrder.getId()
                 )
@@ -79,6 +79,7 @@ public class PaymentController {
         try {
             var resultPayment = payService.getPayment(getnetRequest);
             saleOrderService.addPayment(saleOrder.getId(), resultPayment.getRequestId(), resultPayment.getProcessUrl());
+            saleOrderService.asyncTaskForCheckIncompleteTransactions(saleOrder);
             return ResponseEntity.ok(resultPayment);
         } catch (Exception e) {
             e.printStackTrace();

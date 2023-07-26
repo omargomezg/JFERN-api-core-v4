@@ -40,6 +40,10 @@ public class JwtUserDetailsService implements UserDetailsService {
         return conversionService.convert(user, UserDTO.class);
     }
 
+    public UserDocument getByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow();
+    }
+
     public void update(UserDTO userDTO) {
         var user = userRepository.findById(userDTO.getId()).orElseThrow();
         user.setTelephone(userDTO.getTelephone());

@@ -1,8 +1,12 @@
 package com.southpurity.apicore.service.impl;
 
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
+import com.southpurity.apicore.persistence.model.ProductDocument;
+import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
+import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
 import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
+import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.SaleOrderService;
@@ -10,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +25,7 @@ import java.util.Optional;
 public class SaleOrderServiceImpl implements SaleOrderService {
 
     private final SaleOrderRepository saleOrderRepository;
+    private final ProductRepository productRepository;
     private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
 
@@ -53,6 +59,24 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         var page = saleOrderRepository.findAllByClient(user, pageable);
         page.getContent().forEach(this::sumTotal);
         return page;
+    }
+
+    @Async
+    @Override
+    public void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrderDocument) throws InterruptedException {
+        Thread.sleep(60000);
+        saleOrderDocument = saleOrderRepository.findById(saleOrderDocument.getId()).orElseThrow();
+        if (saleOrderDocument.getPaymentDetail().getStatus().equals("PENDING")) {
+            saleOrderDocument.getProducts().forEach(this::releaseProduct);
+            saleOrderRepository.save(saleOrderDocument);
+        }
+        saleOrderDocument.setStatus(SaleOrderStatusEnum.TIMEOUT);
+        saleOrderRepository.save(saleOrderDocument);
+    }
+
+    private void releaseProduct(ProductDocument productDocument) {
+        productDocument.setStatus(OrderStatusEnum.AVAILABLE);
+        productRepository.save(productDocument);
     }
 
     private void sumTotal(SaleOrderDocument saleOrder) {

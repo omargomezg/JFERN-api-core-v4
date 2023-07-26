@@ -10,5 +10,6 @@ public enum SaleOrderStatusEnum {
     PENDING_VALIDATION,
     REFUNDED,
     ERROR,
+    TIMEOUT,
     UNKNOWN
 }
