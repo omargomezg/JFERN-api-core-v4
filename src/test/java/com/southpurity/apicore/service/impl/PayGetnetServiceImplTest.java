@@ -1,10 +1,16 @@
 package com.southpurity.apicore.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.southpurity.apicore.dto.PaymentResponse;
+import com.southpurity.apicore.dto.getnet.Amount;
+import com.southpurity.apicore.dto.getnet.GetnetRequest;
+import com.southpurity.apicore.dto.getnet.Payment;
+import com.southpurity.apicore.dto.getnet.Person;
 import com.southpurity.apicore.exception.PaymentException;
 import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
+import com.southpurity.apicore.utils.Utils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -16,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,7 +53,24 @@ class PayGetnetServiceImplTest {
     }
 
     @Test
-    void getPayment() {
+    void getPayment_success() throws JsonProcessingException {
+        Payment payment = new Payment();
+        payment.setReference("88236498268");
+        payment.setAmount(Amount.builder().currency("CLP").total("1000").build());
+        payment.setBuyer(new Person());
+        GetnetRequest getnetRequest = GetnetRequest.builder()
+                .ipAddress("192.168.0.1")
+                .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+                .returnUrl("https://www.southpurity.com/check-status")
+                .payment(payment)
+                .build();
+
+        getnetRequest.setPayment(payment);
+
+        var result = payGetnetService.getPayment(getnetRequest);
+        assertThat(result).isPresent();
+        assertNotNull(result.get().getRequestId());
+        assertNotNull(result.get().getProcessUrl());
     }
 
     @Disabled

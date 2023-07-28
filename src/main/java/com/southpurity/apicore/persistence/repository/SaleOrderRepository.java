@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SaleOrderRepository extends MongoRepository<SaleOrderDocument, String> {
@@ -17,5 +18,7 @@ public interface SaleOrderRepository extends MongoRepository<SaleOrderDocument, 
     Page<SaleOrderDocument> findAllByClient(UserDocument user, Pageable pageable);
 
     List<SaleOrderDocument> findAllByStatus(SaleOrderStatusEnum status);
+
+    Optional<SaleOrderDocument> findByClientAndStatus(UserDocument user, SaleOrderStatusEnum status);
 
 }

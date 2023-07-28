@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +37,7 @@ public class PayGetnetServiceImpl implements PayService {
 
     private final SaleOrderRepository saleOrderRepository;
     private final ProductRepository productRepository;
+
     @Value("${getnet.endpoint}")
     private String endpoint;
     @Value("${getnet.login}")
@@ -44,24 +46,32 @@ public class PayGetnetServiceImpl implements PayService {
     private String trankey;
 
     @Override
-    public PaymentResponse getPayment(GetnetRequest getnetRequest) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public Optional<PaymentResponse> getPayment(GetnetRequest getnetRequest) {
         PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
 
-        RedirectRequest request = new RedirectRequest(objectMapper.writeValueAsString(getnetRequest));
-        RedirectResponse response = placeToPay.request(request);
+        RedirectResponse response = placeToPay.request(
+                toRedirectRequest(getnetRequest)
+        );
         if (response.isSuccessful()) {
-            // STORE THE response.getRequestId() and response.getProcessUrl() on your DB associated with the payment order
-            // Redirect the client to the processUrl or display it on the JS extension
-            return PaymentResponse.builder().url(response.getProcessUrl())
+            return Optional.of(
+                    PaymentResponse.builder().url(response.getProcessUrl())
                     .requestId(response.getRequestId())
                     .processUrl(response.getProcessUrl())
-                    .build();
+                    .build()
+            );
         } else {
-            // There was some error so check the message and log it
-            log.error(request.getIpAddress());
-            log.error(request.getUserAgent());
-            throw new PaymentException(response.getStatus().getMessage());
+            log.error(response.getStatus().getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private RedirectRequest toRedirectRequest(GetnetRequest getnetRequest) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return new RedirectRequest(objectMapper.writeValueAsString(getnetRequest));
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing GetnetRequest to RedirectRequest", e);
+            throw new PaymentException("Error parsing GetnetRequest to RedirectRequest");
         }
     }
 

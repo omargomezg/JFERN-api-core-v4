@@ -11,6 +11,7 @@ import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.SaleOrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class SaleOrderServiceImpl implements SaleOrderService {
 
@@ -43,6 +45,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         PaymentDetail paymentDetail = new PaymentDetail();
         paymentDetail.setRequestId(requestId);
         paymentDetail.setProcessUrl(processUrl);
+        paymentDetail.setStatus("PENDING");
         saleOrder.setPaymentDetail(paymentDetail);
         saleOrderRepository.save(saleOrder);
     }
@@ -63,9 +66,17 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Async
     @Override
-    public void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrderDocument) throws InterruptedException {
-        Thread.sleep(60000);
+    public void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrderDocument) {
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
         saleOrderDocument = saleOrderRepository.findById(saleOrderDocument.getId()).orElseThrow();
+        // check status, if null return
+        if (saleOrderDocument.getPaymentDetail() == null) {
+            return;
+        }
         if (saleOrderDocument.getPaymentDetail().getStatus().equals("PENDING")) {
             saleOrderDocument.getProducts().forEach(this::releaseProduct);
             saleOrderRepository.save(saleOrderDocument);

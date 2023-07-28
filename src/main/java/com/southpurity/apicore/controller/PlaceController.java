@@ -1,7 +1,7 @@
 package com.southpurity.apicore.controller;
 
-import com.southpurity.apicore.dto.PlaceDTO;
 import com.southpurity.apicore.dto.customer.MyAddressResponse;
+import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.service.CustomerService;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class PlaceController {
     private final CustomerService customerService;
 
     @GetMapping
-    public ResponseEntity<List<PlaceDTO>> getAll() {
+    public ResponseEntity<List<PlaceDocument>> getAll() {
         return ResponseEntity.ok(placeService.findAll());
     }
 
@@ -29,5 +29,6 @@ public class PlaceController {
     public ResponseEntity<List<MyAddressResponse>> getUserPlaces() {
         return ResponseEntity.ok(customerService.getMyPlaces());
     }
+
 
 }

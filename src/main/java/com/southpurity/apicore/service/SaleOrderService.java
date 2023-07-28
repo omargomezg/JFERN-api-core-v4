@@ -19,6 +19,6 @@ public interface SaleOrderService {
 
     Page<SaleOrderDocument> getAll(String userId, Pageable pageable);
 
-    void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrder) throws InterruptedException;
+    void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrder);
 
 }

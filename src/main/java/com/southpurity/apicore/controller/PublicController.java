@@ -23,7 +23,7 @@ public class PublicController {
 
     @GetMapping("/place")
     public ResponseEntity<List<PlaceDocument>> getPlaces() {
-        return ResponseEntity.ok(placeService.finaAll());
+        return ResponseEntity.ok(placeService.findAll());
     }
 
     @GetMapping("/water-drums/{id}/available")

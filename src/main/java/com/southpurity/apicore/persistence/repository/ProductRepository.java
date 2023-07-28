@@ -18,4 +18,6 @@ public interface ProductRepository extends MongoRepository<ProductDocument, Stri
 
     List<ProductDocument> findAllByPlaceAndStatus(PlaceDocument placeDocument, OrderStatusEnum orderStatusEnum);
 
+    short countProductDocumentByPlace(PlaceDocument placeDocument);
+
 }

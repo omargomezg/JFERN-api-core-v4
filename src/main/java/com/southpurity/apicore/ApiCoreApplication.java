@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -32,6 +33,7 @@ import java.util.List;
 @SpringBootApplication
 @EnableMongoAuditing
 @EnableScheduling
+@EnableAsync
 @RequiredArgsConstructor
 public class ApiCoreApplication implements CommandLineRunner {
 
@@ -40,7 +42,6 @@ public class ApiCoreApplication implements CommandLineRunner {
     private final ConfigurationRepository configurationRepository;
     private final PasswordEncoder bcryptEncoder;
     private final KangooJumpsRepository kangooJumpsRepository;
-    private final SaleOrderRepository saleOrderRepository;
 
     @Value("${configuration.restart-data:false}")
     private boolean populate;

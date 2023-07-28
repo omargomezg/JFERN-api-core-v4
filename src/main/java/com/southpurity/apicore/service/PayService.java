@@ -1,12 +1,13 @@
 package com.southpurity.apicore.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.southpurity.apicore.dto.PaymentResponse;
 import com.southpurity.apicore.dto.getnet.GetnetRequest;
 
+import java.util.Optional;
+
 public interface PayService {
 
-    PaymentResponse getPayment(GetnetRequest request) throws JsonProcessingException;
+    Optional<PaymentResponse> getPayment(GetnetRequest request);
 
     PaymentResponse getPaymentStatus(String saleOrderId);
 

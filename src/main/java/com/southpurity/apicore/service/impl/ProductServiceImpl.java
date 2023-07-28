@@ -5,6 +5,7 @@ import com.southpurity.apicore.dto.PageDTO;
 import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.dto.profile.ProfileResponse;
 import com.southpurity.apicore.exception.SaleOrderException;
+import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
 import com.southpurity.apicore.persistence.model.saleorder.ItemDocument;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.ProductDocument;
@@ -87,5 +88,17 @@ public class ProductServiceImpl implements ProductService {
                 .items(items)
                 .build();
         return saleOrderRepository.save(saleOrder);
+    }
+
+    @Override
+    public void cancelOrder(String userId) {
+        var user = userRepository.findById(userId).orElseThrow();
+        var saleOrder = saleOrderRepository.findByClientAndStatus(user, SaleOrderStatusEnum.PENDING).orElseThrow();
+        saleOrder.getProducts().forEach(product -> {
+            product.setStatus(OrderStatusEnum.AVAILABLE);
+            productRepository.save(product);
+        });
+        saleOrder.setStatus(SaleOrderStatusEnum.UNKNOWN);
+        saleOrderRepository.save(saleOrder);
     }
 }

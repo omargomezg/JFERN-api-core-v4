@@ -25,4 +25,8 @@ public interface ProductService {
      */
     SaleOrderDocument takeOrder(String addressId, List<CartRequest> cartRequest, ProfileResponse profile);
 
+    void cancelOrder(String userId);
+
+
+
 }
