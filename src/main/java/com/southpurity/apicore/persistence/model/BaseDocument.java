@@ -12,6 +12,7 @@ import java.util.Date;
 @Data
 public abstract class BaseDocument {
     @Id
+    @JsonView(View.Administrator.class)
     private String id;
 
     @JsonView(View.Customer.class)

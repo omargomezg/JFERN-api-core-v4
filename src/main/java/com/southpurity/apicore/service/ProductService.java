@@ -2,10 +2,10 @@ package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.CartRequest;
 import com.southpurity.apicore.dto.ProductDTO;
-import com.southpurity.apicore.dto.PageDTO;
 import com.southpurity.apicore.dto.profile.ProfileResponse;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface ProductService {
 
-    PageDTO<ProductDTO> getAllAvailable(String placeId, Pageable pageable);
+    Page<ProductDocument> getAllAvailable(String placeId, Pageable pageable);
 
     ProductDocument create(ProductDTO order);
 
@@ -26,7 +26,6 @@ public interface ProductService {
     SaleOrderDocument takeOrder(String addressId, List<CartRequest> cartRequest, ProfileResponse profile);
 
     void cancelOrder(String userId);
-
 
 
 }

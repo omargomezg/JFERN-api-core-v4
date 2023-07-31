@@ -22,7 +22,7 @@ public class PlaceController {
 
     @GetMapping
     public ResponseEntity<List<PlaceDocument>> getAll() {
-        return ResponseEntity.ok(placeService.findAll());
+        return ResponseEntity.ok(placeService.findAll(null));
     }
 
     @GetMapping("/customer")

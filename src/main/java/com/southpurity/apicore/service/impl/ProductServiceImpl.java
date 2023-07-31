@@ -1,18 +1,17 @@
 package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.dto.CartRequest;
-import com.southpurity.apicore.dto.PageDTO;
 import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.dto.profile.ProfileResponse;
 import com.southpurity.apicore.exception.SaleOrderException;
-import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
-import com.southpurity.apicore.persistence.model.saleorder.ItemDocument;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.ProductDocument;
-import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.CurrencyEnum;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
+import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.ItemDocument;
+import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
@@ -21,6 +20,7 @@ import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,11 +41,9 @@ public class ProductServiceImpl implements ProductService {
     private final ModelMapper modelMapper;
 
     @Override
-    public PageDTO<ProductDTO> getAllAvailable(String placeId, Pageable pageable) {
+    public Page<ProductDocument> getAllAvailable(String placeId, Pageable pageable) {
         var place = placeRepository.findById(placeId).orElseThrow();
-        var orders = productRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE, pageable)
-                .map(order -> modelMapper.map(order, ProductDTO.class));
-        return new PageDTO<>(orders.getContent(), orders.getPageable(), orders.getTotalElements());
+        return productRepository.findAllByPlaceAndStatus(place, OrderStatusEnum.AVAILABLE, pageable);
     }
 
     @Override

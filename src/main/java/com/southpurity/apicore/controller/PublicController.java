@@ -2,6 +2,7 @@ package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.dto.AvailableDrums;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
+import com.southpurity.apicore.persistence.model.constant.StatusPlaceEnum;
 import com.southpurity.apicore.service.CustomerService;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class PublicController {
 
     @GetMapping("/place")
     public ResponseEntity<List<PlaceDocument>> getPlaces() {
-        return ResponseEntity.ok(placeService.findAll());
+        return ResponseEntity.ok(placeService.findAll(StatusPlaceEnum.ENABLED));
     }
 
     @GetMapping("/water-drums/{id}/available")
