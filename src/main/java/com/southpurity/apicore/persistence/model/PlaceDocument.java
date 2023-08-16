@@ -9,8 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.Date;
@@ -46,4 +48,8 @@ public class PlaceDocument {
 
     @JsonView(View.Administrator.class)
     private StatusPlaceEnum status;
+
+    @ReadOnlyProperty
+    @DocumentReference(lazy = true, lookup = "{'place': ?#{#self._id}}")
+    private ProductDocument productDocument;
 }

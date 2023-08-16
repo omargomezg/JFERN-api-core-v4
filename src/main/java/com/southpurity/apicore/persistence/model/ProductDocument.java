@@ -18,7 +18,7 @@ public class ProductDocument extends BaseDocument {
     @JsonView(View.Customer.class)
     private String shortName;
 
-    @DocumentReference
+    @DocumentReference(lazy = true)
     @JsonView(View.Customer.class)
     private PlaceDocument place;
 

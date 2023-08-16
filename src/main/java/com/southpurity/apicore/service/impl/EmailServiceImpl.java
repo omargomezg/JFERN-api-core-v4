@@ -1,9 +1,11 @@
 package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
+import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.service.EmailService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,11 +14,12 @@ import org.springframework.stereotype.Service;
 import javax.mail.internet.MimeMessage;
 
 @Service
+@RequiredArgsConstructor
 @Log4j2
 public class EmailServiceImpl implements EmailService {
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
+    private final SaleOrderRepository saleOrderRepository;
 
     @Override
     public void sendRestorePasswordEmail(UserDocument userDocument, String code) {
@@ -35,7 +38,56 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    private String getBody(String code){
+    @Override
+    public void sendWelcomeEmail(UserDocument userDocument) {
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        simpleMailMessage.setSubject("Bienvenido a Pureza del Sur");
+        simpleMailMessage.setFrom("omar.fdo.gomez@gmail.com");
+        simpleMailMessage.setTo(userDocument.getEmail());
+        simpleMailMessage.setText("Bienvenido a Pureza del Sur");
+        javaMailSender.send(simpleMailMessage);
+    }
+
+    @Override
+    public void sendPurchaseEmail(String saleOrderId) {
+        var saleOrder = saleOrderRepository.findById(saleOrderId).orElseThrow();
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            mimeMessageHelper.setSubject("Compra realizada");
+            mimeMessageHelper.setFrom("omar.fdo.gomez@gmail.com");
+            mimeMessageHelper.setTo(saleOrder.getClient().getEmail());
+            mimeMessageHelper.setText(bodyPurchase(saleOrder), true);
+
+            javaMailSender.send(mimeMessageHelper.getMimeMessage());
+        } catch (Exception ex) {
+            log.error(ex);
+        }
+    }
+
+    private String bodyPurchase(SaleOrderDocument order) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table>");
+        sb.append("<thead><tr><th>Bidón</th><th>Clave</th></tr></thead>");
+        order.getKeys().forEach(item -> sb.append("<tr><td>")
+                .append(item.getKey())
+                .append("</td><td>")
+                .append(item.getValue())
+                .append("</td></tr>"));
+        sb.append("</table>");
+        return String.format("<html>" +
+                "<head></head>" +
+                "<body style='background-color: #FAFAFA;'>" +
+                "    <p>Hola %s,</p>" +
+                "    <p>Tu compra se ha procesado con éxito!</p>" +
+                "%s" +
+                "    <p>Atentamente,</p>" +
+                "    <p>Pureza del Sur</p>" +
+                "</body>" +
+                "</html>", order.getClient().getFullName(), sb);
+    }
+
+    private String getBody(String code) {
         return String.format("<html>" +
                 "<head></head>" +
                 "<body style='background-color: #FAFAFA;'>" +

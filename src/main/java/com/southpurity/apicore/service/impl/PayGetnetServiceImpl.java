@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -55,9 +54,9 @@ public class PayGetnetServiceImpl implements PayService {
         if (response.isSuccessful()) {
             return Optional.of(
                     PaymentResponse.builder().url(response.getProcessUrl())
-                    .requestId(response.getRequestId())
-                    .processUrl(response.getProcessUrl())
-                    .build()
+                            .requestId(response.getRequestId())
+                            .processUrl(response.getProcessUrl())
+                            .build()
             );
         } else {
             log.error(response.getStatus().getMessage());
@@ -85,6 +84,7 @@ public class PayGetnetServiceImpl implements PayService {
         }
         PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
         var resultQuery = placeToPay.query(saleOrder.get().getPaymentDetail().getRequestId().toString());
+        log.info("Payment status: {}", resultQuery.toJsonObject());
         if (resultQuery.getStatus().isApproved()) {
             saleOrder.get().getProducts().forEach(product -> saleOrder.get().getKeys().add(productToKey(product)));
             productRepository.deleteAll(saleOrder.get().getProducts());

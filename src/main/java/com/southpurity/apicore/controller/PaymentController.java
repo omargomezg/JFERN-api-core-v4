@@ -8,6 +8,7 @@ import com.southpurity.apicore.dto.getnet.Payment;
 import com.southpurity.apicore.dto.getnet.Person;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.service.ConfigurationService;
+import com.southpurity.apicore.service.EmailService;
 import com.southpurity.apicore.service.PayService;
 import com.southpurity.apicore.service.ProductService;
 import com.southpurity.apicore.service.ProfileService;
@@ -39,6 +40,7 @@ public class PaymentController {
     private final ProfileService profileService;
     private final ProductService productService;
     private final ConfigurationService configurationService;
+    private final EmailService emailService;
 
     @GetMapping("/client/{id}")
     public ResponseEntity<List<SaleOrderDocument>> getAllOrdersByUser(@PathVariable String id) {
@@ -90,9 +92,13 @@ public class PaymentController {
         return ResponseEntity.ok(resultPayment.get());
     }
 
-    @GetMapping("/status/{id}")
-    public ResponseEntity<PaymentResponse> getPaymentStatus(@PathVariable String id) {
-        return ResponseEntity.ok(payService.getPaymentStatus(id));
+    @GetMapping("/status/{saleOrderId}")
+    public ResponseEntity<PaymentResponse> getPaymentStatus(@PathVariable String saleOrderId) {
+        var result = payService.getPaymentStatus(saleOrderId);
+        if (result.getPaymentStatus().equals("APPROVED")) {
+            emailService.sendPurchaseEmail(saleOrderId);
+        }
+        return ResponseEntity.ok(result);
     }
 
 }
