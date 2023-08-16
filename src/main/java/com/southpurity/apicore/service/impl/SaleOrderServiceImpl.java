@@ -6,6 +6,7 @@ import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
 import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
+import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
@@ -30,6 +31,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     private final ProductRepository productRepository;
     private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
+    private final ConfigurationRepository configurationRepository;
 
     @Override
     public Optional<SaleOrderDocument> updatePaymentStatus(RedirectInformation payment, String saleOrderId) {
@@ -67,8 +69,9 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     @Async
     @Override
     public void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrderDocument) {
+        var configuration = configurationRepository.findBySiteName("southpurity").orElseThrow();
         try {
-            Thread.sleep(60000);
+            Thread.sleep(configuration.getMillisecondsToExpirePayment());
         } catch (InterruptedException e) {
             log.error(e.getMessage());
         }

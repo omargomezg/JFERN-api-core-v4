@@ -33,4 +33,9 @@ public class ConfigurationDocument extends BaseDocument {
      * Valor de bidón más recarga
      */
     private Integer priceWithDrum;
+
+    /**
+     * Tiempo en milisegundos para confirmar pago online
+     */
+    private Long millisecondsToExpirePayment;
 }
