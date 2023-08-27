@@ -14,7 +14,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,24 +36,32 @@ public class UserDocument implements UserDetails {
     private List<AddressDocument> addresses = new ArrayList<>();
 
     @Id
+    @JsonView({View.Administrator.class})
     private String id;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String telephone;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     private RoleEnum role;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String rut;
 
     @Email(message = "Email should be valid")
+    @JsonView({View.Customer.class, View.Stocker.class})
     @Indexed(unique = true)
     private String email;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String city;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String address;
 
     private String password;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String fullName;
 
     @Builder.Default
@@ -63,6 +70,7 @@ public class UserDocument implements UserDetails {
     @CreatedDate
     private Date createdDate;
 
+    @JsonView({View.Customer.class, View.Stocker.class})
     @LastModifiedDate
     private Date updatedDate;
 

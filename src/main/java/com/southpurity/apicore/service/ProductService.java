@@ -1,29 +1,24 @@
 package com.southpurity.apicore.service;
 
-import com.southpurity.apicore.dto.CartRequest;
 import com.southpurity.apicore.dto.ProductDTO;
-import com.southpurity.apicore.dto.profile.ProfileResponse;
+import com.southpurity.apicore.dto.ProductFilter;
 import com.southpurity.apicore.persistence.model.ProductDocument;
-import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
+import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 
 public interface ProductService {
 
-    Page<ProductDocument> getAllAvailable(String placeId, Pageable pageable);
+    Page<ProductDocument> getAll(ProductFilter filter, Pageable pageable);
+
+    Page<ProductDocument> getAllAvailable(String placeId, OrderStatusEnum status, Pageable pageable);
 
     ProductDocument create(ProductDTO order);
 
-    /**
-     * Un cliente hace un pedido y toma la orden
-     * quedando bloqueada mientras se realiza el pago.
-     *
-     * @return El total de la compra
-     */
-    SaleOrderDocument takeOrder(String addressId, List<CartRequest> cartRequest, ProfileResponse profile);
+    ProductDocument update(ProductDocument product);
+
+    void delete(String id);
 
     void cancelOrder(String userId);
 

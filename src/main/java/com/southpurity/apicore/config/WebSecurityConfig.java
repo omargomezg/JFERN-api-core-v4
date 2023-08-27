@@ -43,7 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     var cors = new CorsConfiguration();
                     cors.setAllowedOrigins(List.of("http://localhost:4200",
                             "https://www.purezadelsur.cl"));
-                    cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
                 }).and()
@@ -58,11 +58,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(
                         "/api/authenticate",
+                        "/configuration",
                         "/public/**",
                         "/register",
+                        "/contact",
                         "/auth/**",
                         "/actuator/**").permitAll()
-        // all other requests need to be authenticated
+                // all other requests need to be authenticated
                 .anyRequest().authenticated();
 
         // Add a filter to validate the tokens with every request

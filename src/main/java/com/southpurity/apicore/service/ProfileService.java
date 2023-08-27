@@ -3,8 +3,6 @@ package com.southpurity.apicore.service;
 import com.southpurity.apicore.dto.profile.ProfileResponse;
 import com.southpurity.apicore.persistence.model.AddressDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
-import com.southpurity.apicore.persistence.model.constant.RoleEnum;
-import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 public class ProfileService {
 
     private final UserRepository userRepository;
-    private final PlaceRepository placeRepository;
 
     public ProfileResponse get() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

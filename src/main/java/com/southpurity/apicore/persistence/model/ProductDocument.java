@@ -15,11 +15,11 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @EqualsAndHashCode(callSuper = true)
 public class ProductDocument extends BaseDocument {
 
-    @JsonView(View.Customer.class)
+    @JsonView(View.Anonymous.class)
     private String shortName;
 
     @DocumentReference(lazy = true)
-    @JsonView(View.Customer.class)
+    @JsonView(View.Anonymous.class)
     private PlaceDocument place;
 
     @JsonView(View.Customer.class)
@@ -29,5 +29,6 @@ public class ProductDocument extends BaseDocument {
     private String lockNumber;
 
     @Builder.Default
+    @JsonView(View.Administrator.class)
     private OrderStatusEnum status = OrderStatusEnum.AVAILABLE;
 }

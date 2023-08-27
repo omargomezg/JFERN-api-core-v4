@@ -28,8 +28,9 @@ import java.util.List;
 @Document("saleOrder")
 public class SaleOrderDocument extends BaseDocument {
 
+    @Builder.Default
     @JsonView(View.Customer.class)
-    private Long serial;
+    private Long serial = new Date().getTime();
 
     @Builder.Default
     @JsonView(View.Customer.class)

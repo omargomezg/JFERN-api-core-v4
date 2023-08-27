@@ -1,5 +1,6 @@
 package com.southpurity.apicore.service.impl;
 
+import com.southpurity.apicore.dto.ContactRequest;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
@@ -63,6 +64,16 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception ex) {
             log.error(ex);
         }
+    }
+
+    @Override
+    public void sendContactEmail(ContactRequest contactRequest) {
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        simpleMailMessage.setSubject("Contacto");
+        simpleMailMessage.setFrom("purezadelsur@gmail.com");
+        simpleMailMessage.setTo("purezadelsur@gmail.com");
+        simpleMailMessage.setText(contactRequest.getMessage());
+        javaMailSender.send(simpleMailMessage);
     }
 
     private String bodyPurchase(SaleOrderDocument order) {

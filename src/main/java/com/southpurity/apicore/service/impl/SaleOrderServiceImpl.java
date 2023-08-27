@@ -4,7 +4,6 @@ import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
-import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
@@ -39,17 +38,6 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             return Optional.of(saveApprovedPayment(payment, saleOrderId));
         }
         return Optional.empty();
-    }
-
-    @Override
-    public void addPayment(String saleOrderId, Integer requestId, String processUrl) {
-        var saleOrder = saleOrderRepository.findById(saleOrderId).orElseThrow();
-        PaymentDetail paymentDetail = new PaymentDetail();
-        paymentDetail.setRequestId(requestId);
-        paymentDetail.setProcessUrl(processUrl);
-        paymentDetail.setStatus("PENDING");
-        saleOrder.setPaymentDetail(paymentDetail);
-        saleOrderRepository.save(saleOrder);
     }
 
     @Override

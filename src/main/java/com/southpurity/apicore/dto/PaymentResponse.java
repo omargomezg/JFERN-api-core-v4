@@ -2,14 +2,17 @@ package com.southpurity.apicore.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Collection;
-import java.util.Map;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentResponse {
 
     @JsonView(View.Anonymous.class)

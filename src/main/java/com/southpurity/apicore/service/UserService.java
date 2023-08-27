@@ -1,16 +1,19 @@
 package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.UserDTO;
+import com.southpurity.apicore.dto.UserFilter;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 public interface UserService {
 
     Page<UserDTO> findByRole(RoleEnum roleEnum, Pageable pageable);
 
-    Page<UserDTO> findAllUsers(Pageable pageable);
+    Page<UserDocument> findAllUsers(Pageable pageable, UserFilter filter);
 
     UserDocument update(UserDocument userDocument);
 
@@ -22,5 +25,5 @@ public interface UserService {
 
     UserDTO updatePassword(UserDTO userDTO);
 
-    UserDTO findById(String id);
+    Optional<UserDocument> findById(String id);
 }

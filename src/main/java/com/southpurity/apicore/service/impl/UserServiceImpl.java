@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.dto.UserDTO;
+import com.southpurity.apicore.dto.UserFilter;
 import com.southpurity.apicore.persistence.model.AddressDocument;
 import com.southpurity.apicore.persistence.model.PasswordReset;
 import com.southpurity.apicore.persistence.model.UserDocument;
@@ -12,12 +13,16 @@ import org.modelmapper.ModelMapper;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final MongoTemplate mongoTemplate;
     private final PasswordEncoder bcryptEncoder;
     private final ConversionService conversionService;
 
@@ -34,8 +40,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> findAllUsers(Pageable pageable) {
-        return userRepository.findAllByRoleNot(RoleEnum.CUSTOMER, pageable).map(this::mapToUserDTO);
+    public Page<UserDocument> findAllUsers(Pageable pageable, UserFilter filter) {
+        Query query = new Query().with(pageable);
+        if (filter.getPlaceId() != null) {
+            query.addCriteria(Criteria.where("addresses.place.id").is(filter.getPlaceId()));
+        }
+        if (filter.getRole() != null) {
+            query.addCriteria(Criteria.where("role").in(filter.getRole()));
+        }
+        var users = mongoTemplate.find(query, UserDocument.class);
+        return PageableExecutionUtils.getPage(
+                users,
+                pageable,
+                () -> mongoTemplate.count(query, UserDocument.class));
     }
 
     @Override
@@ -85,9 +102,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO findById(String id) {
-        var user = userRepository.findById(id);
-        return user.map(userDocument -> conversionService.convert(userDocument, UserDTO.class)).orElse(null);
+    public Optional<UserDocument> findById(String id) {
+        return userRepository.findById(id);
     }
 
     protected UserDTO mapToUserDTO(UserDocument user) {
