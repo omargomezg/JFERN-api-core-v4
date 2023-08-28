@@ -7,6 +7,7 @@ import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,13 +23,16 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender javaMailSender;
     private final SaleOrderRepository saleOrderRepository;
 
+    @Value("${spring.mail.username}")
+    private String from;
+
     @Override
     public void sendRestorePasswordEmail(UserDocument userDocument, String code) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setSubject("Solicitud de cambio de contraseña");
-            mimeMessageHelper.setFrom("omar.fdo.gomez@gmail.com");
+            mimeMessageHelper.setFrom(from);
             mimeMessageHelper.setTo(userDocument.getEmail());
             mimeMessageHelper.setText(getBody(code), true);
 
@@ -43,7 +47,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendWelcomeEmail(UserDocument userDocument) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setSubject("Bienvenido a Pureza del Sur");
-        simpleMailMessage.setFrom("omar.fdo.gomez@gmail.com");
+        simpleMailMessage.setFrom(from);
         simpleMailMessage.setTo(userDocument.getEmail());
         simpleMailMessage.setText("Bienvenido a Pureza del Sur");
         javaMailSender.send(simpleMailMessage);
@@ -56,7 +60,7 @@ public class EmailServiceImpl implements EmailService {
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setSubject("Compra realizada");
-            mimeMessageHelper.setFrom("omar.fdo.gomez@gmail.com");
+            mimeMessageHelper.setFrom(from);
             mimeMessageHelper.setTo(saleOrder.getClient().getEmail());
             mimeMessageHelper.setText(bodyPurchase(saleOrder), true);
 
@@ -70,7 +74,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendContactEmail(ContactRequest contactRequest) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setSubject("Contacto");
-        simpleMailMessage.setFrom("purezadelsur@gmail.com");
+        simpleMailMessage.setFrom(from);
         simpleMailMessage.setTo("purezadelsur@gmail.com");
         simpleMailMessage.setText(contactRequest.getMessage());
         javaMailSender.send(simpleMailMessage);

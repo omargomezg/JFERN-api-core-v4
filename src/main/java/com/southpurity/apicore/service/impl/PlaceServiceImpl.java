@@ -2,6 +2,7 @@ package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.constant.StatusPlaceEnum;
+import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 public class PlaceServiceImpl implements PlaceService {
 
     private final ProductRepository productRepository;
+    private final PlaceRepository placeRepository;
     private final MongoTemplate mongoTemplate;
 
 
@@ -33,6 +35,11 @@ public class PlaceServiceImpl implements PlaceService {
             place.setPadlocks(total);
         });
         return places;
+    }
+
+    @Override
+    public PlaceDocument update(PlaceDocument placeDocument) {
+        return placeRepository.save(placeDocument);
     }
 
 }

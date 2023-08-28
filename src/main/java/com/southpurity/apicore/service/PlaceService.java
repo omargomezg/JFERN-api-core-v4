@@ -9,4 +9,6 @@ public interface PlaceService {
 
     List<PlaceDocument> findAll(StatusPlaceEnum statusPlaceEnum);
 
+    PlaceDocument update(PlaceDocument placeDocument);
+
 }
