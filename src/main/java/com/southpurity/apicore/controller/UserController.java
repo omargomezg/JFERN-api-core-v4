@@ -33,9 +33,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getById(@PathVariable String id) {
+    public ResponseEntity<UserDocument> getById(@PathVariable String id) {
         var user = userService.findById(id);
-        return ResponseEntity.ok(conversionService.convert(user, UserDTO.class));
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping

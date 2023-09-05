@@ -13,4 +13,6 @@ public interface EmailService {
 
     void sendContactEmail(ContactRequest contactRequest);
 
+    void sendTestEmail(String email);
+
 }

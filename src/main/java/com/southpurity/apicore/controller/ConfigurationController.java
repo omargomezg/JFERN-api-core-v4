@@ -19,7 +19,8 @@ public class ConfigurationController {
 
     @GetMapping
     public ResponseEntity<ConfigurationDocument> getConfiguration() {
-        return ResponseEntity.ok(configurationService.findBySiteName());
+        var document = configurationService.findBySiteName();
+        return ResponseEntity.ok(document);
     }
 
     @PutMapping

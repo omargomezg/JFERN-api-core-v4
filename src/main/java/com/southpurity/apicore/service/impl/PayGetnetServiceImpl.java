@@ -194,9 +194,11 @@ public class PayGetnetServiceImpl implements PayService {
     public void scheduledTaskForPendings() {
         var saleOrders = saleOrderRepository.findAllByStatus(SaleOrderStatusEnum.PENDING);
         saleOrders.forEach(saleOrder -> {
+            log.info("Updating payment status for sale order {}", saleOrder.getId());
             PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
             if (saleOrder.getPaymentDetail() != null) {
                 var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+                log.info("Payment status: {}", resultQuery.toJsonObject());
                 addPaymentStatusToSaleOrder(resultQuery, saleOrder);
             }
         });

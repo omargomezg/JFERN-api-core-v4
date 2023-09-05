@@ -47,4 +47,7 @@ public class ConfigurationDocument extends BaseDocument {
     @JsonView(View.Anonymous.class)
     @JsonProperty("timeToPay")
     private Long millisecondsToExpirePayment;
+
+    @JsonView(View.Administrator.class)
+    private Smtp smtp;
 }

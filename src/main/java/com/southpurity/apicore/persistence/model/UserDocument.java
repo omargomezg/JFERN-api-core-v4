@@ -45,6 +45,7 @@ public class UserDocument implements UserDetails {
     @JsonView({View.Customer.class, View.Stocker.class})
     private RoleEnum role;
 
+    @Indexed(unique = true)
     @JsonView({View.Customer.class, View.Stocker.class})
     private String rut;
 
@@ -65,6 +66,7 @@ public class UserDocument implements UserDetails {
     private String fullName;
 
     @Builder.Default
+    @JsonView({View.Administrator.class})
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
 
     @CreatedDate

@@ -28,6 +28,6 @@ public class ConfigurationService {
         configuration.setPrice(request.getPrice());
         configuration.setPriceWithDrum(request.getPriceWithDrum());
         configuration.setMillisecondsToExpirePayment(request.getMillisecondsToExpirePayment());
-        return configurationRepository.save(configuration);
+        return configurationRepository.save(request);
     }
 }

@@ -80,6 +80,16 @@ public class EmailServiceImpl implements EmailService {
         javaMailSender.send(simpleMailMessage);
     }
 
+    @Override
+    public void sendTestEmail(String email) {
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        simpleMailMessage.setSubject("Email de prueba");
+        simpleMailMessage.setFrom(from);
+        simpleMailMessage.setTo(email);
+        simpleMailMessage.setText("Email de prueba ;)");
+        javaMailSender.send(simpleMailMessage);
+    }
+
     private String bodyPurchase(SaleOrderDocument order) {
         StringBuilder sb = new StringBuilder();
         sb.append("<table>");

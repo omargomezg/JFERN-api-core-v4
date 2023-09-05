@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -48,6 +49,7 @@ public class UserServiceImpl implements UserService {
         if (filter.getRole() != null) {
             query.addCriteria(Criteria.where("role").in(filter.getRole()));
         }
+        query.with(Sort.by(Sort.Direction.DESC, "updatedDate"));
         var users = mongoTemplate.find(query, UserDocument.class);
         return PageableExecutionUtils.getPage(
                 users,

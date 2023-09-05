@@ -19,6 +19,7 @@ public abstract class BaseDocument {
     @CreatedDate
     private Date createdDate;
 
+    @JsonView(View.Administrator.class)
     @LastModifiedDate
     private Date updatedDate;
 
