@@ -3,9 +3,9 @@ package com.southpurity.apicore.controller;
 import com.southpurity.apicore.dto.UserDTO;
 import com.southpurity.apicore.dto.UserFilter;
 import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.service.PlaceService;
 import com.southpurity.apicore.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final ConversionService conversionService;
+    private final PlaceService placeService;
 
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody UserDTO user) {
@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable String id) {
+    public ResponseEntity<Void> update(@PathVariable String id) {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -54,6 +54,14 @@ public class UserController {
     public ResponseEntity<UserDTO> updatePassword(@PathVariable String id, @RequestBody UserDTO user) {
         user.setId(id);
         return ResponseEntity.ok(userService.updatePassword(user));
+    }
+
+    @PutMapping("/{clientId}/place/{placeId}")
+    public ResponseEntity<UserDocument> updatePlace(@PathVariable String clientId, @PathVariable String placeId) {
+        var client = userService.findById(clientId).orElseThrow();
+        var place = placeService.findById(placeId).orElseThrow();
+        client.setPlaceId(place.getId());
+        return ResponseEntity.ok(userService.update(client));
     }
 
 }

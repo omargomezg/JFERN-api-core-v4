@@ -79,6 +79,9 @@ public class UserDocument implements UserDetails {
     @JsonView(View.Anonymous.class)
     private PasswordReset passwordReset;
 
+    @JsonView(View.Customer.class)
+    private String placeId;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> roles = new ArrayList<>();

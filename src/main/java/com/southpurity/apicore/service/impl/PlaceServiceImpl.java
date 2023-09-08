@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,11 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public PlaceDocument update(PlaceDocument placeDocument) {
         return placeRepository.save(placeDocument);
+    }
+
+    @Override
+    public Optional<PlaceDocument> findById(String id) {
+        return placeRepository.findById(id);
     }
 
 }
