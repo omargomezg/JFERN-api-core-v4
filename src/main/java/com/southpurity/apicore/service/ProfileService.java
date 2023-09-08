@@ -35,6 +35,8 @@ public class ProfileService {
                 .rut(userDocumento.getRut())
                 .email(user.getUsername())
                 .telephone(userDocumento.getTelephone())
+                .city(userDocumento.getCity())
+                .address(address.toString())
                 .role(userDocumento.getRole())
                 .fullName(userDocumento.getFullName())
                 .address(address.toString())
@@ -44,6 +46,8 @@ public class ProfileService {
     public UserDocument update(ProfileResponse profile) {
         var user = userRepository.findById(profile.getId()).orElseThrow();
         user.setTelephone(profile.getTelephone());
+        user.setAddress(profile.getAddress());
+        user.setCity(profile.getCity());
         user.setFullName(profile.getFullName());
         return userRepository.save(user);
     }

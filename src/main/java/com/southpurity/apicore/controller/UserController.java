@@ -46,8 +46,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable String id) {
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<UserDocument> update(@PathVariable String id, @RequestBody UserDocument user) {
+        return ResponseEntity.ok(userService.update(user));
     }
 
     @PutMapping("/{id}/password")

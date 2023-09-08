@@ -1,13 +1,10 @@
 package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.dto.profile.ProfileResponse;
-import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,12 +23,6 @@ public class ProfileController {
     @GetMapping
     public ResponseEntity<ProfileResponse> get() {
         return ResponseEntity.ok(profileService.get());
-    }
-
-
-    @PutMapping
-    public ResponseEntity<UserDocument> update(@RequestBody ProfileResponse profile) {
-        return ResponseEntity.ok(profileService.update(profile));
     }
 
 }

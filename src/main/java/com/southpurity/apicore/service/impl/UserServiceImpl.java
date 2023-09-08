@@ -6,6 +6,7 @@ import com.southpurity.apicore.persistence.model.AddressDocument;
 import com.southpurity.apicore.persistence.model.PasswordReset;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
+import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final MongoTemplate mongoTemplate;
+    private final PlaceRepository placeRepository;
     private final PasswordEncoder bcryptEncoder;
     private final ConversionService conversionService;
 
@@ -51,6 +53,11 @@ public class UserServiceImpl implements UserService {
         }
         query.with(Sort.by(Sort.Direction.DESC, "updatedDate"));
         var users = mongoTemplate.find(query, UserDocument.class);
+        users.forEach(user -> {
+            if (user.getRole().equals(RoleEnum.CUSTOMER) && user.getPlaceId() != null) {
+                placeRepository.findById(user.getPlaceId()).ifPresent(user::setPlace);
+            }
+        });
         return PageableExecutionUtils.getPage(
                 users,
                 pageable,
@@ -105,7 +112,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<UserDocument> findById(String id) {
-        return userRepository.findById(id);
+        var user = userRepository.findById(id);
+        if (user.isPresent()){
+            if (user.get().getRole().equals(RoleEnum.CUSTOMER) && user.get().getPlaceId() != null) {
+                placeRepository.findById(user.get().getPlaceId()).ifPresent(user.get()::setPlace);
+            }
+        }return user;
     }
 
     protected UserDTO mapToUserDTO(UserDocument user) {

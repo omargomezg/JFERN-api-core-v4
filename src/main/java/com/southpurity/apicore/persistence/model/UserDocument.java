@@ -12,6 +12,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +37,7 @@ public class UserDocument implements UserDetails {
     private List<AddressDocument> addresses = new ArrayList<>();
 
     @Id
-    @JsonView({View.Administrator.class})
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String id;
 
     @JsonView({View.Customer.class, View.Stocker.class})
@@ -79,8 +80,11 @@ public class UserDocument implements UserDetails {
     @JsonView(View.Anonymous.class)
     private PasswordReset passwordReset;
 
-    @JsonView(View.Customer.class)
     private String placeId;
+
+    @Transient
+    @JsonView(View.Customer.class)
+    private PlaceDocument place;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

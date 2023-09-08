@@ -7,10 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 @AllArgsConstructor
 public class ProfileResponse {
+
+    @NotNull(message = "id is required")
     @JsonView({View.Customer.class, View.Stocker.class})
     private String id;
 
@@ -31,4 +35,8 @@ public class ProfileResponse {
 
     @JsonView({View.Customer.class, View.Stocker.class})
     private String address;
+
+    @JsonView({View.Customer.class, View.Stocker.class})
+    private String city;
+
 }
