@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service.impl;
 
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
+import com.southpurity.apicore.dto.SaleOrderRequest;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
@@ -13,8 +14,12 @@ import com.southpurity.apicore.service.SaleOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -47,11 +52,21 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public Page<SaleOrderDocument> getAll(String userId, Pageable pageable) {
-        var user = userRepository.findById(userId).orElseThrow();
-        var page = saleOrderRepository.findAllByClient(user, pageable);
-        page.getContent().forEach(this::sumTotal);
-        return page;
+    public Page<SaleOrderDocument> getAll(SaleOrderRequest filter) {
+        Pageable pageable = PageRequest.of(
+                filter.getPage(), filter.getSize(),
+                Sort.by(filter.getSortBy(), filter.getDirection())
+        );
+        Query query = new Query().with(pageable);
+        if (filter.getClientId() != null) {
+            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("client").is(filter.getClientId()));
+        }
+        var saleOrders = mongoTemplate.find(query, SaleOrderDocument.class);
+        saleOrders.forEach(this::sumTotal);
+        return PageableExecutionUtils.getPage(
+                saleOrders,
+                pageable,
+                () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), SaleOrderDocument.class));
     }
 
     @Async

@@ -1,9 +1,9 @@
 package com.southpurity.apicore.service;
 
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
+import com.southpurity.apicore.dto.SaleOrderRequest;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +15,7 @@ public interface SaleOrderService {
 
     List<SaleOrderDocument> getAllOrdersByUser(String userId);
 
-    Page<SaleOrderDocument> getAll(String userId, Pageable pageable);
+    Page<SaleOrderDocument> getAll(SaleOrderRequest saleOrderRequest);
 
     void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrder);
 

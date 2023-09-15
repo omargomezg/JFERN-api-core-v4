@@ -43,6 +43,7 @@ public class SaleOrderDocument extends BaseDocument {
     @JsonView(View.Customer.class)
     private PaymentDetail paymentDetail;
 
+    @JsonView(View.Administrator.class)
     @DocumentReference
     private UserDocument client;
 
