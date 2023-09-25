@@ -6,8 +6,10 @@ import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class ConfigurationService {
 
@@ -24,10 +26,8 @@ public class ConfigurationService {
     }
 
     public ConfigurationDocument update(ConfigurationDocument request) {
-        var configuration = configurationRepository.findAll().stream().findFirst().orElseThrow();
-        configuration.setPrice(request.getPrice());
-        configuration.setPriceWithDrum(request.getPriceWithDrum());
-        configuration.setMillisecondsToExpirePayment(request.getMillisecondsToExpirePayment());
+        var configuration = configurationRepository.findBySiteName("southpurity").orElseThrow();
+        request.setId(configuration.getId());
         return configurationRepository.save(request);
     }
 }

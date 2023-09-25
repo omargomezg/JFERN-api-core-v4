@@ -42,9 +42,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -58,6 +60,7 @@ public class PayGetnetServiceImpl implements PayService {
     private final ConfigurationRepository configurationRepository;
     private final PlaceRepository placeRepository;
     private final ProfileService profileService;
+    private final ObjectMapper objectMapper;
 
     @Value("${getnet.endpoint}")
     private String endpoint;
@@ -68,7 +71,7 @@ public class PayGetnetServiceImpl implements PayService {
 
     @Transactional
     @Override
-    public PaymentResponse getPayment(PaymentRequest request) {
+    public PaymentResponse getPayment(@NotNull PaymentRequest request) {
         PlaceDocument place = placeRepository.findById(request.getPlace().getId()).orElseThrow();
         var client = getClient(request.getClient());
         var products = productRepository.markAsTaken(request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
@@ -93,6 +96,7 @@ public class PayGetnetServiceImpl implements PayService {
         saleOrderRepository.save(order);
         return PaymentResponse.builder().url(response.getProcessUrl())
                 .requestId(response.getRequestId())
+                .saleOrderId(order.getId())
                 .processUrl(response.getProcessUrl())
                 .paymentStatus(SaleOrderStatusEnum.PENDING.name())
                 .build();
@@ -151,7 +155,6 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private RedirectRequest toRedirectRequest(GetnetRequest getnetRequest) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return new RedirectRequest(objectMapper.writeValueAsString(getnetRequest));
         } catch (JsonProcessingException e) {
@@ -192,9 +195,8 @@ public class PayGetnetServiceImpl implements PayService {
     @Scheduled(fixedDelay = 86400000)
     @Override
     public void scheduledTaskForPendings() {
-        var saleOrders = saleOrderRepository.findAllByStatus(SaleOrderStatusEnum.PENDING);
+        var saleOrders = saleOrderRepository.findAllByStatusIn(SaleOrderStatusEnum.isPending());
         saleOrders.forEach(saleOrder -> {
-            log.info("Updating payment status for sale order {}", saleOrder.getId());
             PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
             if (saleOrder.getPaymentDetail() != null) {
                 var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
@@ -237,7 +239,20 @@ public class PayGetnetServiceImpl implements PayService {
                 productRepository.save(product);
             });
         }
+        saleOrder.getPaymentDetail().setStatus(redirectInformation.getStatus().getStatus());
+        saleOrder.getPaymentDetail().setReason(redirectInformation.getStatus().getReason());
+        saleOrder.getPaymentDetail().setMessage(redirectInformation.getStatus().getMessage());
+        saleOrder.getPaymentDetail().setDate(redirectInformation.getStatus().getDate());
+        //saleOrder.getPaymentDetail().setPayment(getDetails(redirectInformation));
         saleOrderRepository.save(saleOrder);
+    }
+
+    // TODO check if this is the correct way to get the details
+    private Map getDetails(RedirectInformation redirectInformation) {
+        log.info(redirectInformation);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.convertValue(redirectInformation, Map.class);
+
     }
 
     private URL getUrl() {

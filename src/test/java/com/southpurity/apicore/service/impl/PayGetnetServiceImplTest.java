@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
@@ -56,12 +57,16 @@ class PayGetnetServiceImplTest {
 
     @Test
     void scheduledTaskForPendings() {
-        when(saleOrderRepository.findAllByStatus(SaleOrderStatusEnum.PENDING))
-                .thenReturn(List.of(
-                        mock(SaleOrderDocument.class),
-                        mock(SaleOrderDocument.class),
-                        mock(SaleOrderDocument.class)
-                ));
+        var sales = List.of(
+                mock(SaleOrderDocument.class),
+                mock(SaleOrderDocument.class)
+        );
+        when(saleOrderRepository.findAllByStatusIn(SaleOrderStatusEnum.isPending()))
+                .thenReturn(sales);
+        when(sales.get(0).getPaymentDetail()).thenReturn(mock(PaymentDetail.class));
+        when(sales.get(0).getPaymentDetail().getRequestId()).thenReturn(54);
+        when(sales.get(1).getPaymentDetail()).thenReturn(mock(PaymentDetail.class));
+        when(sales.get(1).getPaymentDetail().getRequestId()).thenReturn(5234);
 
         payGetnetService.scheduledTaskForPendings();
     }

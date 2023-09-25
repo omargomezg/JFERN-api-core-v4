@@ -71,7 +71,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Async
     @Override
-    public void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrderDocument) {
+    public void asyncTaskForCheckIncompleteTransactions(String saleOrderId) {
+        var saleOrderDocument = saleOrderRepository.findById(saleOrderId).orElseThrow();
         var configuration = configurationRepository.findBySiteName("southpurity").orElseThrow();
         try {
             Thread.sleep(configuration.getMillisecondsToExpirePayment());

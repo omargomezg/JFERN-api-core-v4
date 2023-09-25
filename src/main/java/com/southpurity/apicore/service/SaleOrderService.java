@@ -17,6 +17,6 @@ public interface SaleOrderService {
 
     Page<SaleOrderDocument> getAll(SaleOrderRequest saleOrderRequest);
 
-    void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrder);
+    void asyncTaskForCheckIncompleteTransactions(String saleOrderId);
 
 }

@@ -24,6 +24,8 @@ public class PaymentResponse {
     @JsonView(View.Customer.class)
     private Collection<ProductsInPaymentResponse> products;
 
+    private String saleOrderId;
+
     /**
      * Payment order id
      */

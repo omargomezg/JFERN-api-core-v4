@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotNull;
+
 
 /**
  * Registro de la configuración global de la aplicación
@@ -20,12 +22,14 @@ public class ConfigurationDocument extends BaseDocument {
     /**
      * Nombre del sitio
      */
+    @NotNull
     @JsonView(View.Anonymous.class)
     private String siteName;
 
     /**
      * Url de retorno para pago online
      */
+    @NotNull
     @JsonView(View.Anonymous.class)
     private String returnUrl;
 
@@ -33,20 +37,23 @@ public class ConfigurationDocument extends BaseDocument {
      * Valor de recarga
      */
     @JsonView(View.Anonymous.class)
-    private Integer price;
+    @Builder.Default
+    private Integer price = 2500;
 
     /**
      * Valor de bidón más recarga
      */
     @JsonView(View.Anonymous.class)
-    private Integer priceWithDrum;
+    @Builder.Default
+    private Integer priceWithDrum = 7000;
 
     /**
-     * Tiempo en milisegundos para confirmar pago online
+     * Tiempo en milisegundos para confirmar pago online, por defecto 10 minutos
      */
     @JsonView(View.Anonymous.class)
     @JsonProperty("timeToPay")
-    private Long millisecondsToExpirePayment;
+    @Builder.Default
+    private Long millisecondsToExpirePayment = 600000L;
 
     @JsonView(View.Administrator.class)
     private Smtp smtp;

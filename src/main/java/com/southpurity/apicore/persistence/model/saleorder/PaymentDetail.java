@@ -12,6 +12,7 @@ public class PaymentDetail {
     @JsonView(View.Administrator.class)
     private Integer requestId;
 
+    @JsonView(View.Administrator.class)
     private String processUrl;
 
     @JsonView(View.Administrator.class)
@@ -28,5 +29,6 @@ public class PaymentDetail {
 
     @JsonView(View.Administrator.class)
     private PaymentTypeEnum paymentType;
+
 
 }

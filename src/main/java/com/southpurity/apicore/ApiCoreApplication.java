@@ -76,6 +76,8 @@ public class ApiCoreApplication implements CommandLineRunner {
         if (configurationRepository.findBySiteName("southpurity").isEmpty()) {
             configurationRepository.save(ConfigurationDocument.builder()
                     .price(2500)
+                    .priceWithDrum(7000)
+                    .millisecondsToExpirePayment(600000L)
                     .siteName("southpurity")
                     .returnUrl("http://localhost:4200/payment-result")
                     .build());

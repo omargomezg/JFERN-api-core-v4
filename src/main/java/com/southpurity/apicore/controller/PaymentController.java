@@ -50,8 +50,8 @@ public class PaymentController {
         request.setIpAddress(Utils.getIpAddress(httpServletRequest));
         request.setUserAgent(Utils.getUserAgent(httpServletRequest));
         var service = payFactory.getStrategy(PaymentTypeEnum.valueOf(request.getPaymentType()));
-        var response = service.getPayment(request);
-        // saleOrderService.asyncTaskForCheckIncompleteTransactions(xx);
+        PaymentResponse response = service.getPayment(request);
+        saleOrderService.asyncTaskForCheckIncompleteTransactions(response.getSaleOrderId());
         return ResponseEntity.ok(response);
     }
 
