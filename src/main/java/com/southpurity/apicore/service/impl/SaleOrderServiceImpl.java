@@ -55,7 +55,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     public Page<SaleOrderDocument> getAll(SaleOrderRequest filter) {
         Pageable pageable = PageRequest.of(
                 filter.getPage(), filter.getSize(),
-                Sort.by(filter.getSortBy(), filter.getDirection())
+                Sort.by(filter.getDirection(), filter.getSortBy())
         );
         Query query = new Query().with(pageable);
         if (filter.getClientId() != null) {
