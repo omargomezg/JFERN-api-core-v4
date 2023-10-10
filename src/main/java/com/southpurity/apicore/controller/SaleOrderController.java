@@ -1,5 +1,6 @@
 package com.southpurity.apicore.controller;
 
+import com.southpurity.apicore.dto.SaleOrderFilter;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.service.SaleOrderService;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +22,8 @@ public class SaleOrderController {
     private final SaleOrderService saleOrderService;
 
     @GetMapping
-    public ResponseEntity<Page<SaleOrderDocument>> getAll(@RequestParam(required = false) String userId,
-                                                          @RequestParam(defaultValue = "0") int page,
-                                                          @RequestParam(defaultValue = "15") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        return ResponseEntity.ok(saleOrderService.getAll(userId, pageable));
+    public ResponseEntity<Page<SaleOrderDocument>> getAll(SaleOrderFilter filter) {
+        return ResponseEntity.ok(saleOrderService.getAll(filter));
     }
 
 }

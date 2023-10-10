@@ -11,8 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
-public interface SaleOrderRepository extends MongoRepository<SaleOrderDocument, String> {
+public interface SaleOrderRepository extends MongoRepository<SaleOrderDocument, String>, SaleOrderRepositoryCustom {
     List<SaleOrderDocument> findByClient(UserDocument user);
 
     Page<SaleOrderDocument> findAllByClient(UserDocument user, Pageable pageable);

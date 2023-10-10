@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service.impl;
 
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
+import com.southpurity.apicore.dto.SaleOrderFilter;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
@@ -47,9 +48,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public Page<SaleOrderDocument> getAll(String userId, Pageable pageable) {
-        var user = userRepository.findById(userId).orElseThrow();
-        var page = saleOrderRepository.findAllByClient(user, pageable);
+    public Page<SaleOrderDocument> getAll(SaleOrderFilter filter) {
+        var page = saleOrderRepository.findAll(filter);
         page.getContent().forEach(this::sumTotal);
         return page;
     }
