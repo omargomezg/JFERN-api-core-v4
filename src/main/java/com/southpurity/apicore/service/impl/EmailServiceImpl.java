@@ -8,12 +8,16 @@ import com.southpurity.apicore.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import freemarker.template.Configuration;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +26,10 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender javaMailSender;
     private final SaleOrderRepository saleOrderRepository;
+    private final Configuration freemarkerConfiguration;
 
     @Value("${spring.mail.username}")
-    private String from;
+    private String purezaDelSurGmail;
 
     @Override
     public void sendRestorePasswordEmail(UserDocument userDocument, String code) {
@@ -32,7 +37,7 @@ public class EmailServiceImpl implements EmailService {
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setSubject("Solicitud de cambio de contraseña");
-            mimeMessageHelper.setFrom(from);
+            mimeMessageHelper.setFrom(purezaDelSurGmail);
             mimeMessageHelper.setTo(userDocument.getEmail());
             mimeMessageHelper.setText(getBody(code), true);
 
@@ -47,7 +52,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendWelcomeEmail(UserDocument userDocument) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setSubject("Bienvenido a Pureza del Sur");
-        simpleMailMessage.setFrom(from);
+        simpleMailMessage.setFrom(purezaDelSurGmail);
         simpleMailMessage.setTo(userDocument.getEmail());
         simpleMailMessage.setText("Bienvenido a Pureza del Sur");
         javaMailSender.send(simpleMailMessage);
@@ -60,7 +65,7 @@ public class EmailServiceImpl implements EmailService {
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setSubject("Compra realizada");
-            mimeMessageHelper.setFrom(from);
+            mimeMessageHelper.setFrom(purezaDelSurGmail);
             mimeMessageHelper.setTo(saleOrder.getClient().getEmail());
             mimeMessageHelper.setText(bodyPurchase(saleOrder), true);
 
@@ -72,19 +77,27 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendContactEmail(ContactRequest contactRequest) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setSubject("Contacto");
-        simpleMailMessage.setFrom(from);
-        simpleMailMessage.setTo("purezadelsur@gmail.com");
-        simpleMailMessage.setText(contactRequest.getMessage());
-        javaMailSender.send(simpleMailMessage);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+
+            mimeMessageHelper.setSubject("Contacto web");
+            mimeMessageHelper.setFrom(purezaDelSurGmail);
+            mimeMessageHelper.setTo("omar.fdo.gomez@gmail.com");
+            String content = getContentFromTemplate(contactRequest.getModel());
+            mimeMessageHelper.setText(content, true);
+
+            javaMailSender.send(mimeMessageHelper.getMimeMessage());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void sendTestEmail(String email) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setSubject("Email de prueba");
-        simpleMailMessage.setFrom(from);
+        simpleMailMessage.setFrom(purezaDelSurGmail);
         simpleMailMessage.setTo(email);
         simpleMailMessage.setText("Email de prueba ;)");
         javaMailSender.send(simpleMailMessage);
@@ -125,6 +138,17 @@ public class EmailServiceImpl implements EmailService {
                 "    <p>El equipo de cuentas de Pureza del Sur ;)</p>" +
                 "</body>" +
                 "</html>", code);
+    }
+
+    private String getContentFromTemplate(Map<String, Object> model) {
+        StringBuilder content = new StringBuilder();
+        try {
+            content.append(FreeMarkerTemplateUtils.processTemplateIntoString(
+                    freemarkerConfiguration.getTemplate("contact-template.flth"), model));
+        } catch (Exception e) {
+            log.error("Error while processing email template", e);
+        }
+        return content.toString();
     }
 
 }
