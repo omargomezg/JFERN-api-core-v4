@@ -55,6 +55,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDocument create(ProductDTO productDTO) {
         var place = placeRepository.findById(productDTO.getPlace()).orElseThrow();
+        productRepository.findByPlaceAndLockNumber(place, productDTO.getLockNumber()).ifPresent(product -> {
+            throw new IllegalArgumentException("Ya existe un producto con el número de candado " + productDTO.getLockNumber());
+        });
         return productRepository.save(ProductDocument.builder()
                 .shortName("Bidón de 20 litros")
                 .place(place)
