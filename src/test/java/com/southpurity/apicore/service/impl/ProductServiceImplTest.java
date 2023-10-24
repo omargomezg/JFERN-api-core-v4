@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.dto.ProductDTO;
+import com.southpurity.apicore.exception.ProductException;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
@@ -61,6 +62,6 @@ class ProductServiceImplTest {
         when(placeRepository.findById(productDTO.getPlace())).thenReturn(Optional.of(placeDocument));
         when(productRepository.findByPlaceAndLockNumber(placeDocument, productDTO.getLockNumber())).thenReturn(Optional.of(productDocument));
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> productService.create(productDTO));
+        Assertions.assertThrows(ProductException.class, () -> productService.create(productDTO));
     }
 }

@@ -2,6 +2,7 @@ package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.dto.ProductFilter;
+import com.southpurity.apicore.exception.ProductException;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
@@ -56,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDocument create(ProductDTO productDTO) {
         var place = placeRepository.findById(productDTO.getPlace()).orElseThrow();
         productRepository.findByPlaceAndLockNumber(place, productDTO.getLockNumber()).ifPresent(product -> {
-            throw new IllegalArgumentException("Ya existe un producto con el número de candado " + productDTO.getLockNumber());
+            throw new ProductException("Ya existe un producto con el número de candado " + productDTO.getLockNumber());
         });
         return productRepository.save(ProductDocument.builder()
                 .shortName("Bidón de 20 litros")
