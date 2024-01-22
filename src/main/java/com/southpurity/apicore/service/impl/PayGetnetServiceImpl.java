@@ -24,6 +24,7 @@ import com.southpurity.apicore.persistence.model.constant.CurrencyEnum;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.PaymentTypeEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.History;
 import com.southpurity.apicore.persistence.model.saleorder.ItemDocument;
 import com.southpurity.apicore.persistence.model.saleorder.Key;
 import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
@@ -82,17 +83,24 @@ public class PayGetnetServiceImpl implements PayService {
         RedirectRequest redirectRequest = toRedirectRequest(getnetRequest);
         RedirectResponse response = placeToPay.request(redirectRequest);
         if (!response.isSuccessful()) {
+            var message = response.getStatus().getMessage();
             productRepository.markAsAvailable(products.stream().map(BaseDocument::getId).toList(), place.getId());
             order.setStatus(SaleOrderStatusEnum.UNKNOWN);
+            order.getHistory().add(History.builder()
+                    .message(String.format("No se pudo procesar el pago en Getnet: %s", message))
+                    .build());
             saleOrderRepository.save(order);
             log.error(response.getStatus().getMessage());
-            return PaymentResponse.builder().message(response.getStatus().getMessage()).build();
+            return PaymentResponse.builder().message(message).build();
         }
         PaymentDetail paymentDetail = PaymentDetail.builder()
                 .requestId(response.requestId)
                 .processUrl(response.processUrl)
                 .status(SaleOrderStatusEnum.PENDING.name()).build();
         order.setPaymentDetail(paymentDetail);
+        order.getHistory().add(History.builder()
+                .message("Pago enviado a getnet con el id " + response.getRequestId())
+                .build());
         saleOrderRepository.save(order);
         return PaymentResponse.builder().url(response.getProcessUrl())
                 .requestId(response.getRequestId())
@@ -165,28 +173,27 @@ public class PayGetnetServiceImpl implements PayService {
 
     @Override
     public PaymentResponse getPaymentStatus(String saleOrderId) {
-        var saleOrder = saleOrderRepository.findById(saleOrderId);
-        if (saleOrder.isEmpty() || saleOrder.get().getPaymentDetail() == null) {
-            return PaymentResponse.builder()
-                    .paymentStatus("NOT_EXISTS")
-                    .build();
-        }
-        PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
-        var resultQuery = placeToPay.query(saleOrder.get().getPaymentDetail().getRequestId().toString());
-        log.info("Payment status: {}", resultQuery.toJsonObject());
-        if (resultQuery.getStatus().isApproved()) {
-            saleOrder.get().getProducts().forEach(product -> saleOrder.get().getKeys().add(productToKey(product)));
-            productRepository.deleteAll(saleOrder.get().getProducts());
-            saleOrder.get().getProducts().clear();
-        }
-        addPaymentStatusToSaleOrder(resultQuery, saleOrder.get());
-        return PaymentResponse.builder()
-                .products(
-                        saleOrder.get().getKeys().stream()
-                                .map(this::productToResponse)
-                                .collect(Collectors.toSet()))
-                .paymentStatus(resultQuery.getStatus().getStatus())
-                .build();
+        PaymentResponse response = new PaymentResponse();
+        saleOrderRepository.findById(saleOrderId).ifPresentOrElse(saleOrder -> {
+            PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
+            var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+            saleOrder.getHistory().add(History.builder()
+                    .message(String.format("Se obtiene el estado Getnet: %s", resultQuery.getStatus().getStatus()))
+                    .build());
+            log.info("Payment status: {}", resultQuery.toJsonObject());
+            if (resultQuery.getStatus().isApproved()) {
+                saleOrder.getProducts().forEach(product -> saleOrder.getKeys().add(productToKey(product)));
+                productRepository.deleteAll(saleOrder.getProducts());
+                saleOrder.getProducts().clear();
+            }
+            addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+            response.setProducts(
+                    saleOrder.getKeys().stream()
+                            .map(this::productToResponse)
+                            .collect(Collectors.toSet()));
+            response.setPaymentStatus(resultQuery.getStatus().getStatus());
+        }, () -> response.setPaymentStatus("NOT_EXISTS"));
+        return response;
     }
 
     /**
@@ -195,15 +202,18 @@ public class PayGetnetServiceImpl implements PayService {
     @Scheduled(fixedDelay = 86400000)
     @Override
     public void scheduledTaskForPendings() {
-        var saleOrders = saleOrderRepository.findAllByStatusIn(SaleOrderStatusEnum.isPending());
-        saleOrders.forEach(saleOrder -> {
-            PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
-            if (saleOrder.getPaymentDetail() != null) {
-                var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
-                log.info("Payment status: {}", resultQuery.toJsonObject());
-                addPaymentStatusToSaleOrder(resultQuery, saleOrder);
-            }
-        });
+        saleOrderRepository.findAllByStatusIn(SaleOrderStatusEnum.isPending()).parallelStream()
+                .forEach(saleOrder -> {
+                    PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
+                    if (saleOrder.getPaymentDetail() != null) {
+                        var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+                        log.info("Payment status: {}", resultQuery.toJsonObject());
+                        saleOrder.getHistory().add(History.builder()
+                                .message(String.format("Getnet, con tarea automatizada obtiene el estado: %s", resultQuery.getStatus().getStatus()))
+                                .build());
+                        addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+                    }
+                });
     }
 
     @Override
@@ -231,6 +241,7 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private void addPaymentStatusToSaleOrder(RedirectInformation redirectInformation, SaleOrderDocument saleOrder) {
+        log.info("Updating sale order {} status to {}", saleOrder.getId(), redirectInformation.getStatus().getStatus());
         SaleOrderStatusEnum status = SaleOrderStatusEnum.valueOf(redirectInformation.getStatus().getStatus());
         saleOrder.setStatus(status);
         if (status.equals(SaleOrderStatusEnum.REJECTED)) {

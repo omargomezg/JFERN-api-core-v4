@@ -5,6 +5,7 @@ import com.southpurity.apicore.dto.SaleOrderRequest;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.History;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
@@ -23,6 +24,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,8 +60,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 Sort.by(filter.getDirection(), filter.getSortBy())
         );
         Query query = new Query().with(pageable);
-        if (filter.getClientId() != null) {
-            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("client").is(filter.getClientId()));
+        if (filter.getUserId() != null) {
+            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("client").is(filter.getUserId()));
         }
         var saleOrders = mongoTemplate.find(query, SaleOrderDocument.class);
         saleOrders.forEach(this::sumTotal);
@@ -80,16 +82,14 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             log.error(e.getMessage());
         }
         saleOrderDocument = saleOrderRepository.findById(saleOrderDocument.getId()).orElseThrow();
-        // check status, if null return
-        if (saleOrderDocument.getPaymentDetail() == null) {
-            return;
-        }
-        if (saleOrderDocument.getPaymentDetail().getStatus().equals("PENDING")) {
+        if (saleOrderDocument.getStatus().equals(SaleOrderStatusEnum.PENDING)) {
             saleOrderDocument.getProducts().forEach(this::releaseProduct);
+            saleOrderDocument.setProducts(new HashSet<>());
+            saleOrderDocument.getHistory().add(History.builder().message("La orden fue cancelada por expiración de tiempo")
+                    .build());
+            saleOrderDocument.setStatus(SaleOrderStatusEnum.TIMEOUT);
             saleOrderRepository.save(saleOrderDocument);
         }
-        saleOrderDocument.setStatus(SaleOrderStatusEnum.TIMEOUT);
-        saleOrderRepository.save(saleOrderDocument);
     }
 
     private void releaseProduct(ProductDocument productDocument) {

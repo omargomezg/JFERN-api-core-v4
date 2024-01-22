@@ -9,5 +9,5 @@ public class SaleOrderRequest {
     private Integer size = 15;
     private String sortBy = "createdDate";
     private Sort.Direction direction = Sort.Direction.DESC;
-    private String clientId;
+    private String userId;
 }

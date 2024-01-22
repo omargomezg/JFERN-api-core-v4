@@ -36,6 +36,10 @@ public class SaleOrderDocument extends BaseDocument {
     @JsonView(View.Customer.class)
     List<ItemDocument> items = new ArrayList<>();
 
+    @Builder.Default
+    @JsonView(View.Administrator.class)
+    List<History> history = new ArrayList<>();
+
     @JsonView(View.Customer.class)
     @Builder.Default
     private SaleOrderStatusEnum status = SaleOrderStatusEnum.PENDING;
