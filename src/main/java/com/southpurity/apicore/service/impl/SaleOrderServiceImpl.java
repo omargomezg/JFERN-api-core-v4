@@ -14,11 +14,13 @@ import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.SaleOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
@@ -61,7 +63,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         );
         Query query = new Query().with(pageable);
         if (filter.getUserId() != null) {
-            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("client").is(filter.getUserId()));
+            query.addCriteria(Criteria.where("client").is(new ObjectId(filter.getUserId())));
         }
         var saleOrders = mongoTemplate.find(query, SaleOrderDocument.class);
         saleOrders.forEach(this::sumTotal);

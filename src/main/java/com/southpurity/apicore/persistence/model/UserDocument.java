@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import com.southpurity.apicore.persistence.model.constant.UserStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -81,6 +83,9 @@ public class UserDocument implements UserDetails {
     private PasswordReset passwordReset;
 
     private String placeId;
+
+    @DocumentReference(lazy = true)
+    private transient List<SaleOrderDocument> saleOrders;
 
     @Transient
     @JsonView(View.Customer.class)
