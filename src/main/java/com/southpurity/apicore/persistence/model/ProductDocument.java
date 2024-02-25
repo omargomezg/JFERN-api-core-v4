@@ -22,6 +22,10 @@ public class ProductDocument extends BaseDocument {
     @JsonView(View.Anonymous.class)
     private PlaceDocument place;
 
+    @DocumentReference(lazy = true)
+    @JsonView(View.Anonymous.class)
+    private ProductType type;
+
     @JsonView(View.Customer.class)
     private String padlockKey;
 

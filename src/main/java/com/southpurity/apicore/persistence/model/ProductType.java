@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Document("products")
 @Data
@@ -22,6 +23,10 @@ public class ProductType extends BaseDocument {
     @JsonView(View.Administrator.class)
     private Boolean status;
 
+    @DocumentReference(lazy = true, lookup = "{'place': ?#{#self._id}}")
+    private ProductDocument productDocument;
 }
+
+
 
 
