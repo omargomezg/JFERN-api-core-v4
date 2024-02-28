@@ -6,10 +6,7 @@ import com.southpurity.apicore.exception.ProductException;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
-import com.southpurity.apicore.persistence.repository.PlaceRepository;
-import com.southpurity.apicore.persistence.repository.ProductRepository;
-import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
-import com.southpurity.apicore.persistence.repository.UserRepository;
+import com.southpurity.apicore.persistence.repository.*;
 import com.southpurity.apicore.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -29,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
     private final PlaceRepository placeRepository;
     private final UserRepository userRepository;
     private final SaleOrderRepository saleOrderRepository;
+    private final ProductTypeRepository productTypeRepository;
     private final MongoTemplate mongoTemplate;
 
     @Override
@@ -56,11 +54,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDocument create(ProductDTO productDTO) {
         var place = placeRepository.findById(productDTO.getPlace()).orElseThrow();
+        var type = productTypeRepository.findById(productDTO.getProductType()).orElseThrow();
         productRepository.findByPlaceAndLockNumber(place, productDTO.getLockNumber()).ifPresent(product -> {
             throw new ProductException("Ya existe un producto con el número de candado " + productDTO.getLockNumber());
         });
         return productRepository.save(ProductDocument.builder()
                 .shortName("Bidón de 20 litros")
+                .productType(type)
                 .place(place)
                 .lockNumber(productDTO.getLockNumber())
                 .padlockKey(productDTO.getPadlockKey())

@@ -22,4 +22,7 @@ public class ProductDTO {
     @JsonView(View.Customer.class)
     private String place;
 
+    @JsonView(View.Customer.class)
+    private String productType;
+
 }
