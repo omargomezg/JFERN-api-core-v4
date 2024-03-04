@@ -1,6 +1,6 @@
 package com.southpurity.apicore.controller;
 
-import com.southpurity.apicore.dto.SaleOrderFilter;
+import com.southpurity.apicore.dto.SaleOrderRequest;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.service.SaleOrderService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +18,8 @@ public class SaleOrderController {
     private final SaleOrderService saleOrderService;
 
     @GetMapping
-    public ResponseEntity<Page<SaleOrderDocument>> getAll(SaleOrderFilter filter) {
-        return ResponseEntity.ok(saleOrderService.getAll(filter));
+    public ResponseEntity<Page<SaleOrderDocument>> getAll(SaleOrderRequest request) {
+        return ResponseEntity.ok(saleOrderService.getAll(request));
     }
 
 }
