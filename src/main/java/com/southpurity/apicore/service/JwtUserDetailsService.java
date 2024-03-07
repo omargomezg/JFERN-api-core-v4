@@ -1,12 +1,12 @@
 package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.UserDTO;
+import com.southpurity.apicore.exception.AuthException;
 import com.southpurity.apicore.persistence.model.UserDocument;
-import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,11 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class JwtUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final PlaceRepository placeRepository;
     private final PasswordEncoder bcryptEncoder;
     private final ConversionService conversionService;
 
@@ -30,6 +30,10 @@ public class JwtUserDetailsService implements UserDetailsService {
     }
 
     public UserDocument create(UserDocument user) {
+        userRepository.findByEmail(user.getEmail()).ifPresent(u -> {
+            log.error("User with email {} already exists", u.getEmail());
+            throw new AuthException("Alguien mas usa este email, intente con otro.");
+        });
         var encodedPassword = bcryptEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         return userRepository.save(user);
