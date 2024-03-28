@@ -3,6 +3,8 @@ package com.southpurity.apicore.persistence.model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
+import com.southpurity.apicore.persistence.model.producttype.BottleDocument;
+import com.southpurity.apicore.persistence.model.producttype.ProductTypeDocument;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,16 +17,13 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @EqualsAndHashCode(callSuper = true)
 public class ProductDocument extends BaseDocument {
 
-    @JsonView(View.Anonymous.class)
-    private String shortName;
-
     @DocumentReference(lazy = true)
     @JsonView(View.Anonymous.class)
     private PlaceDocument place;
 
     @DocumentReference(lazy = true)
     @JsonView(View.Anonymous.class)
-    private ProductType productType;
+    private BottleDocument productType;
 
     @JsonView(View.Customer.class)
     private String padlockKey;

@@ -26,7 +26,7 @@ public class ProductServiceImpl implements ProductService {
     private final PlaceRepository placeRepository;
     private final UserRepository userRepository;
     private final SaleOrderRepository saleOrderRepository;
-    private final ProductTypeRepository productTypeRepository;
+    private final BottleRepository bottleRepository;
     private final MongoTemplate mongoTemplate;
 
     @Override
@@ -54,12 +54,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDocument create(ProductDTO productDTO) {
         var place = placeRepository.findById(productDTO.getPlace()).orElseThrow();
-        var type = productTypeRepository.findById(productDTO.getProductType()).orElseThrow();
+        var type = bottleRepository.findById(productDTO.getProductType()).orElseThrow();
         productRepository.findByPlaceAndLockNumber(place, productDTO.getLockNumber()).ifPresent(product -> {
             throw new ProductException("Ya existe un producto con el número de candado " + productDTO.getLockNumber());
         });
         return productRepository.save(ProductDocument.builder()
-                .shortName("Bidón de 20 litros")
                 .productType(type)
                 .place(place)
                 .lockNumber(productDTO.getLockNumber())

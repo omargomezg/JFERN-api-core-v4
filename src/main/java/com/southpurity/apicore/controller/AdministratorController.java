@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/administrator")
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class AdministratorController {
     }
 
     @PostMapping("/product")
-    public ResponseEntity<ProductDocument> createOrder(@RequestBody ProductDTO order) {
+    public ResponseEntity<ProductDocument> createOrder(@Valid @RequestBody ProductDTO order) {
         return ResponseEntity.ok(productService.create(order));
     }
 

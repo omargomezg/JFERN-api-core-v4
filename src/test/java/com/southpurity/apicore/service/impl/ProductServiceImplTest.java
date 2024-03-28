@@ -4,6 +4,8 @@ import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.exception.ProductException;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.ProductDocument;
+import com.southpurity.apicore.persistence.model.producttype.BottleDocument;
+import com.southpurity.apicore.persistence.repository.BottleRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import org.junit.jupiter.api.Assertions;
@@ -32,12 +34,16 @@ class ProductServiceImplTest {
     @Mock
     ProductRepository productRepository;
 
+    @Mock
+    BottleRepository bottleRepository;
+
     @Test
     void create_success() {
         ProductDTO productDTO = new ProductDTO();
         PlaceDocument placeDocument = mock(PlaceDocument.class);
 
         when(placeRepository.findById(productDTO.getPlace())).thenReturn(Optional.of(placeDocument));
+        when(bottleRepository.findById(productDTO.getProductType())).thenReturn(Optional.of(mock(BottleDocument.class)));
         when(productRepository.save(any(ProductDocument.class))).thenReturn(mock(ProductDocument.class));
 
         ProductDocument product = productService.create(productDTO);
@@ -60,6 +66,7 @@ class ProductServiceImplTest {
         ProductDocument productDocument = mock(ProductDocument.class);
 
         when(placeRepository.findById(productDTO.getPlace())).thenReturn(Optional.of(placeDocument));
+        when(bottleRepository.findById(productDTO.getProductType())).thenReturn(Optional.of(mock(BottleDocument.class)));
         when(productRepository.findByPlaceAndLockNumber(placeDocument, productDTO.getLockNumber())).thenReturn(Optional.of(productDocument));
 
         Assertions.assertThrows(ProductException.class, () -> productService.create(productDTO));

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 public class ProductDTO {
 
@@ -22,6 +24,8 @@ public class ProductDTO {
     @JsonView(View.Customer.class)
     private String place;
 
+
+    @NotNull
     @JsonView(View.Customer.class)
     private String productType;
 
