@@ -10,6 +10,9 @@ import lombok.Data;
 public class AvailableDrums {
 
     @JsonView(View.Anonymous.class)
+    private String description;
+
+    @JsonView(View.Anonymous.class)
     private Integer available;
 
     @JsonView(View.Anonymous.class)

@@ -5,14 +5,17 @@ import com.southpurity.apicore.dto.customer.CustomerPlaceRequest;
 import com.southpurity.apicore.dto.customer.MyAddressResponse;
 import com.southpurity.apicore.dto.customer.MyOrderResponseDTO;
 import com.southpurity.apicore.persistence.model.AddressDocument;
+import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
+import com.southpurity.apicore.persistence.repository.BottleRepository;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
-import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
+import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -21,9 +24,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class CustomerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
@@ -31,6 +39,7 @@ public class CustomerService {
     private final ProductRepository productRepository;
     private final PlaceRepository placeRepository;
     private final ConfigurationRepository configurationRepository;
+    private final BottleRepository bottleRepository;
 
     public List<MyOrderResponseDTO> getMyOrders() {
         return new ArrayList<>();
@@ -51,15 +60,26 @@ public class CustomerService {
                 .build();
     }
 
-    public AvailableDrums getAvailableWaterDrums(String place) {
-        var placeDocument = placeRepository.findById(place).orElseThrow();
-        Integer size =  productRepository.findAllByPlaceAndStatus(placeDocument, OrderStatusEnum.AVAILABLE)
-                .size();
-        var configuration = configurationRepository.findBySiteName("southpurity").orElseThrow();
+    public List<AvailableDrums> getAvailableBottles(String place) {
+        List<AvailableDrums> response = new ArrayList<>();
+        PlaceDocument placeDocument = placeRepository.findById(place).orElseThrow();
+        var products = productRepository.findAllByPlaceAndStatus(placeDocument, OrderStatusEnum.AVAILABLE);
+        products.stream()
+                .filter(distinctByKey(ProductDocument::getProductType))
+                .forEach(product -> response.add(toAvailableDrums(product)));
+        response.forEach(availableDrums -> {
+            availableDrums.setAvailable(products.stream()
+                    .filter(product -> product.getProductType().getShortName().equals(availableDrums.getDescription()))
+                    .toList().size());
+        });
+        return response;
+    }
+
+    private AvailableDrums toAvailableDrums(ProductDocument product) {
         return AvailableDrums.builder()
-                .available(size)
-                .priceWithDrum(configuration.getPriceWithDrum())
-                .price(configuration.getPrice())
+                .description(product.getProductType().getShortName())
+                .price(product.getProductType().getPriceRecharge())
+                .priceWithDrum(product.getProductType().getPriceDrum())
                 .build();
     }
 
@@ -73,6 +93,11 @@ public class CustomerService {
                         .isPrincipal(customerPlace.getIsPrincipal())
                         .build());
         userRepository.save(user);
+    }
+
+    private <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
     protected MyOrderResponseDTO orderDocumentToDTO(ProductDocument order) {

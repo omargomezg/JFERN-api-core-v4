@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Document("productType")
@@ -36,6 +37,6 @@ public class BottleDocument extends ProductTypeDocument {
     private Integer priceDrum;
 
     @DocumentReference(lazy = true, lookup = "{'productType': ?#{#self._id}}")
-    private ProductDocument productDocument;
+    private List<ProductDocument> productDocument;
 
 }

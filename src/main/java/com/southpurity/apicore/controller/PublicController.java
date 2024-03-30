@@ -2,7 +2,9 @@ package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.dto.AvailableDrums;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
+import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.StatusPlaceEnum;
+import com.southpurity.apicore.persistence.model.producttype.BottleDocument;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.service.CustomerService;
 import com.southpurity.apicore.service.PlaceService;
@@ -36,8 +38,8 @@ public class PublicController {
     }
 
     @GetMapping("/water-drums/{id}/available")
-    public ResponseEntity<AvailableDrums> availableWaterDrums(@PathVariable String id) {
-        return ResponseEntity.ok(customerService.getAvailableWaterDrums(id));
+    public ResponseEntity<List<AvailableDrums>> availableWaterDrums(@PathVariable String id) {
+        return ResponseEntity.ok(customerService.getAvailableBottles(id));
     }
 
 }
