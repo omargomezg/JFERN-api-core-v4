@@ -52,9 +52,10 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
     }
 
     @Override
-    public List<ProductDocument> markAsTaken(int limit, String place) {
+    public List<ProductDocument> markAsTaken(int limit, String place, String shortName) {
         Query query = new Query();
         query.addCriteria(Criteria.where(STATUS).is(OrderStatusEnum.AVAILABLE));
+        query.addCriteria(Criteria.where("shortName").is(shortName));
         query.addCriteria(Criteria.where(PLACE).is(new ObjectId(place)));
         query.with(Sort.by(Sort.Direction.ASC, "createdDate"));
         query.limit(limit);

@@ -35,7 +35,7 @@ public class AuthController {
 
     @PostMapping("/auth/token")
     public ResponseEntity<LoginResponse> createAuthenticationToken(@RequestBody UserDTO authenticationRequest) throws Exception {
-        final Authentication auth = authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+        final Authentication auth = authenticate(authenticationRequest.getEmail().toLowerCase(), authenticationRequest.getPassword());
         SecurityContextHolder.getContext().setAuthentication(auth);
         String token = jwtTokenUtil.generateToken(auth);
         return ResponseEntity.ok(new LoginResponse(token, profileService.get()));

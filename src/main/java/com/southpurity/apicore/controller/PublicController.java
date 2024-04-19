@@ -22,21 +22,14 @@ public class PublicController {
 
     private final PlaceService placeService;
     private final CustomerService customerService;
-    private final ProductRepository productRepository;
 
     @GetMapping("/place")
     public ResponseEntity<List<PlaceDocument>> getPlaces() {
         return ResponseEntity.ok(placeService.findAll(StatusPlaceEnum.ENABLED));
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<?> getProducts() {
-        var products = productRepository.markAsTaken(1, "6462ab7bba33223e5a27f0c5");
-        return ResponseEntity.ok(products);
-    }
-
     @GetMapping("/water-drums/{id}/available")
-    public ResponseEntity<AvailableDrums> availableWaterDrums(@PathVariable String id) {
+    public ResponseEntity<List<AvailableDrums>> availableWaterDrums(@PathVariable String id) {
         return ResponseEntity.ok(customerService.getAvailableWaterDrums(id));
     }
 

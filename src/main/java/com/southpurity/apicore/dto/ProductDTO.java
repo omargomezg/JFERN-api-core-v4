@@ -11,6 +11,15 @@ public class ProductDTO {
     private String id;
 
     @JsonView(View.Customer.class)
+    private String shortName;
+
+    @JsonView(View.Customer.class)
+    private Integer priceBottle;
+
+    @JsonView(View.Customer.class)
+    private Integer priceRefill;
+
+    @JsonView(View.Customer.class)
     private String lockNumber;
 
     @JsonView(View.Customer.class)

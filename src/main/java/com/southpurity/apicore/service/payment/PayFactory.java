@@ -1,6 +1,7 @@
-package com.southpurity.apicore.service;
+package com.southpurity.apicore.service.payment;
 
 import com.southpurity.apicore.persistence.model.constant.PaymentTypeEnum;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

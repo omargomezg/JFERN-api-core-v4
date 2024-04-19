@@ -1,4 +1,4 @@
-package com.southpurity.apicore.service.impl;
+package com.southpurity.apicore.service.payment;
 
 import com.southpurity.apicore.dto.PaymentResponse;
 import com.southpurity.apicore.dto.ProductsInPaymentResponse;
@@ -15,7 +15,6 @@ import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
-import com.southpurity.apicore.service.PayService;
 import com.southpurity.apicore.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -60,10 +59,11 @@ public class CashPaymentServiceImpl implements PayService {
     private List<ProductDocument> markAsTakenAndGetProducts(PaymentRequest request) {
         var productsDto = request.getProducts();
         var place = request.getPlace();
-        if (productsDto.isEmpty()) {
-            var quantity = request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum();
-            return productRepository.markAsTaken(quantity, place.getId());
-        }
+
+        request.getItems().forEach(item -> productRepository.markAsTaken(
+                request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
+                request.getPlace().getId(),
+                item.getDescription()));
         var ids = productsDto.stream().map(ProductDto::getId).toList();
         return productRepository.markAsTaken(ids, place.getId());
     }

@@ -9,6 +9,9 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Document("products")
 @Data
 @Builder
@@ -21,6 +24,10 @@ public class ProductDocument extends BaseDocument {
     @DocumentReference(lazy = true)
     @JsonView(View.Anonymous.class)
     private PlaceDocument place;
+
+    @Builder.Default
+    @JsonView(View.Anonymous.class)
+    Set<Price> prices = new HashSet<>();
 
     @JsonView(View.Customer.class)
     private String padlockKey;

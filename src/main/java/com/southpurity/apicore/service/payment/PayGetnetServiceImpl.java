@@ -1,4 +1,4 @@
-package com.southpurity.apicore.service.impl;
+package com.southpurity.apicore.service.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +34,6 @@ import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
-import com.southpurity.apicore.service.PayService;
 import com.southpurity.apicore.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -46,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,10 +73,18 @@ public class PayGetnetServiceImpl implements PayService {
     @Transactional
     @Override
     public PaymentResponse getPayment(@NotNull PaymentRequest request) {
+        List<ProductDocument> products = new ArrayList<>();
         PlaceDocument place = placeRepository.findById(request.getPlace().getId()).orElseThrow();
         var client = getClient(request.getClient());
-        var products = productRepository.markAsTaken(request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
-                request.getPlace().getId());
+        request.getItems().forEach(item -> {
+            
+        });
+        request.getItems().forEach(item -> {
+            products.addAll(productRepository.markAsTaken(
+                    request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
+                    request.getPlace().getId(),
+                    item.getDescription()));
+        });
         var order = createOrder(client, products, request.getItems());
         PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
         var getnetRequest = getGetnetRequest(request, client, order);
