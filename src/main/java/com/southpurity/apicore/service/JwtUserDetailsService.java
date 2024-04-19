@@ -30,12 +30,14 @@ public class JwtUserDetailsService implements UserDetailsService {
     }
 
     public UserDocument create(UserDocument user) {
-        userRepository.findByEmail(user.getEmail()).ifPresent(u -> {
+        String email = user.getEmail().toLowerCase();
+        userRepository.findByEmail(email).ifPresent(u -> {
             log.error("User with email {} already exists", u.getEmail());
             throw new AuthException("Alguien mas usa este email, intente con otro.");
         });
         var encodedPassword = bcryptEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+        user.setEmail(email);
         return userRepository.save(user);
     }
 
