@@ -2,11 +2,14 @@ package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.dto.customer.MyAddressResponse;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
+import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.service.CustomerService;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +38,11 @@ public class PlaceController {
     @GetMapping("/customer")
     public ResponseEntity<List<MyAddressResponse>> getUserPlaces() {
         return ResponseEntity.ok(customerService.getMyPlaces());
+    }
+
+    @PatchMapping("/{place}/product/{product}")
+    public ResponseEntity<Boolean> releaseProduct(@PathVariable String place, @PathVariable String product) {
+        return ResponseEntity.ok(placeService.releaseProduct(place, product));
     }
 
 

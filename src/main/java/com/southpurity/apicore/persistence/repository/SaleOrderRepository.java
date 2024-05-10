@@ -22,4 +22,6 @@ public interface SaleOrderRepository extends MongoRepository<SaleOrderDocument, 
 
     Optional<SaleOrderDocument> findByClientAndStatus(UserDocument user, SaleOrderStatusEnum status);
 
+    List<SaleOrderDocument> findAllByProductsId(String productId);
+
 }
