@@ -6,7 +6,12 @@ plugins {
 
 group = 'com.southpurity'
 version = '0.1.5-SNAPSHOT'
-sourceCompatibility = '17'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     mavenCentral()
