@@ -25,6 +25,9 @@ public class ProductDTO {
     @JsonView(View.Customer.class)
     private String padlockKey;
 
+    @JsonView(View.Administrator.class)
+    private String shortName;
+
     /**
      * The place id where the product is located.
      */

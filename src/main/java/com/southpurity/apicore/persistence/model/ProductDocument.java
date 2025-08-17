@@ -21,6 +21,12 @@ public class ProductDocument extends BaseDocument {
     @JsonView(View.Anonymous.class)
     private String shortName;
 
+    @JsonView(View.Anonymous.class)
+    private Integer price;
+
+    @JsonView(View.Anonymous.class)
+    private Integer priceWithDrum;
+
     @DocumentReference(lazy = true)
     @JsonView(View.Anonymous.class)
     private PlaceDocument place;
