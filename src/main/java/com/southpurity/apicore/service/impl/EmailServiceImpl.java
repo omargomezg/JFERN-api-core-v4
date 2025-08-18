@@ -83,7 +83,8 @@ public class EmailServiceImpl implements EmailService {
 
             mimeMessageHelper.setSubject("Contacto web");
             mimeMessageHelper.setFrom(purezaDelSurGmail);
-            mimeMessageHelper.setTo("omar.fdo.gomez@gmail.com");
+            mimeMessageHelper.setTo(purezaDelSurGmail);
+            mimeMessageHelper.setCc("caysensur@gmail.com");
             String content = getContentFromTemplate(contactRequest.getModel());
             mimeMessageHelper.setText(content, true);
 
