@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.11'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'jacoco'
 }
 
 group = 'com.southpurity'
@@ -42,9 +43,98 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 
-tasks.named('test') {
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/model/**',
+                '**/dto/**',
+                '**/config/**',
+                '**/constants/**',
+                '**/constant/**',
+                '**/*Application*',
+                '**/exception/**',
+                '**/*Builder*',
+                '**/*Request*',
+                '**/*Response*',
+                '**/persistence/model/**',
+                '**/persistence/repository/constant/**'
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+            excludes = [
+                '**/model/**',
+                '**/dto/**',
+                '**/config/**',
+                '**/constants/**',
+                '**/constant/**',
+                '**/*Application*',
+                '**/exception/**',
+                '**/*Builder*',
+                '**/*Request*',
+                '**/*Response*',
+                '**/persistence/model/**',
+                '**/persistence/repository/constant/**'
+            ]
+        }
+
+        rule {
+            element = 'CLASS'
+            includes = ['**/controller/**']
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+
+        rule {
+            element = 'CLASS'
+            includes = ['**/service/impl/**']
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+    jacoco {
+        enabled = true
+    }
     useJUnitPlatform()
 }
+
+check.dependsOn jacocoTestCoverageVerification
 
 jar {
     enabled = false
