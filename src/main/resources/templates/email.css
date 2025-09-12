@@ -6,7 +6,7 @@
      padding: 0 !important;
      height: 100% !important;
      width: 100% !important;
-     background: #f1f1f1;
+     background: #ffffff !important;
  }
 
 /* What it does: Stops email clients resizing small text. */
@@ -286,9 +286,16 @@ ul.social li{
     color: rgba(0,0,0,1);
 }
 
-
-@media screen and (max-width: 500px) {
-
-
+.detail-table {
+    padding-top: 20px;
+    width: 300px;
 }
+.detail-table th, .detail-table td {
+    width: 50%;
+}
+.detail-table.fixed {
+    table-layout: fixed;
+}
+
+@media screen and (max-width: 500px) {  }
 </style>

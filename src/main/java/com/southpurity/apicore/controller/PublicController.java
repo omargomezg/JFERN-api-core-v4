@@ -3,8 +3,8 @@ package com.southpurity.apicore.controller;
 import com.southpurity.apicore.dto.AvailableDrums;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.constant.StatusPlaceEnum;
-import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.service.CustomerService;
+import com.southpurity.apicore.service.EmailService;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +22,13 @@ public class PublicController {
 
     private final PlaceService placeService;
     private final CustomerService customerService;
+    private final EmailService emailService;
+
+    @GetMapping("/test/{id}")
+    public ResponseEntity<Void> test(@PathVariable String id) {
+        emailService.sendPurchaseEmail(id);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/place")
     public ResponseEntity<List<PlaceDocument>> getPlaces() {

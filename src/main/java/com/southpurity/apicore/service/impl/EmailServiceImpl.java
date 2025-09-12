@@ -10,6 +10,8 @@ import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -19,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -95,19 +98,18 @@ public class EmailServiceImpl implements EmailService {
     public void sendPurchaseEmail(String saleOrderId) {
         Objects.requireNonNull(saleOrderId, "Sale order ID cannot be null");
 
+        var model = new HashMap<String, Object>();
+        model.put(COMPANY_NAME, PUREZA_DEL_SUR);
+        model.put(SIGNATURE, DEFAULT_SIGNATURE);
         var saleOrder = saleOrderRepository.findById(saleOrderId)
             .orElseThrow(() -> new IllegalArgumentException("Sale order not found: " + saleOrderId));
-
+        model.put("clientName", getUserName(saleOrder.getClient()));
+        model.put("keys", saleOrder.getKeys());
         EmailRequest request = EmailRequest.builder()
             .to(saleOrder.getClient().getEmail())
-            .subject("Compra realizada")
+            .subject("Gracias por tu compra")
             .templateName(TEMPLATE_PURCHASE)
-            .model(Map.of(
-                "clientName", getUserName(saleOrder.getClient()),
-                "keys", saleOrder.getKeys(),
-                    COMPANY_NAME, PUREZA_DEL_SUR,
-                SIGNATURE, DEFAULT_SIGNATURE
-            ))
+            .model(model)
             .build();
 
         sendTemplatedEmail(request);
@@ -168,7 +170,7 @@ public class EmailServiceImpl implements EmailService {
     private MimeMessage createMimeMessage(String to, String subject, String htmlContent) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, ENCODING);
+            var helper = new MimeMessageHelper(mimeMessage, true, ENCODING);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setFrom(purezaDelSurGmail);
