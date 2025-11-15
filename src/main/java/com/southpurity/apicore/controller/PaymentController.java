@@ -8,6 +8,7 @@ import com.southpurity.apicore.service.EmailService;
 import com.southpurity.apicore.service.SaleOrderService;
 import com.southpurity.apicore.service.payment.PayFactory;
 import com.southpurity.apicore.utils.Utils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController

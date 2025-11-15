@@ -7,11 +7,11 @@ import com.southpurity.apicore.service.EmailService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -19,9 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.StringUtils;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,17 +57,17 @@ public class EmailServiceImpl implements EmailService {
         Objects.requireNonNull(code, "Verification code cannot be null");
 
         EmailRequest request = EmailRequest.builder()
-            .to(userDocument.getEmail())
-            .subject("Solicitud de cambio de contraseña")
-            .templateName(TEMPLATE_RESTORE_PASSWORD)
-            .model(Map.of(
-                "code", code,
-                "validityMinutes", PASSWORD_RESET_VALIDITY_MINUTES,
-                "userName", getUserName(userDocument),
-                    COMPANY_NAME, PUREZA_DEL_SUR,
-                SIGNATURE, DEFAULT_SIGNATURE
-            ))
-            .build();
+                .to(userDocument.getEmail())
+                .subject("Solicitud de cambio de contraseña")
+                .templateName(TEMPLATE_RESTORE_PASSWORD)
+                .model(Map.of(
+                        "code", code,
+                        "validityMinutes", PASSWORD_RESET_VALIDITY_MINUTES,
+                        "userName", getUserName(userDocument),
+                        COMPANY_NAME, PUREZA_DEL_SUR,
+                        SIGNATURE, DEFAULT_SIGNATURE
+                ))
+                .build();
 
         sendTemplatedEmail(request);
     }
@@ -81,15 +78,15 @@ public class EmailServiceImpl implements EmailService {
         Objects.requireNonNull(userDocument.getEmail(), "User email cannot be null");
 
         EmailRequest request = EmailRequest.builder()
-            .to(userDocument.getEmail())
-            .subject("Bienvenido a " + PUREZA_DEL_SUR)
-            .templateName(TEMPLATE_WELCOME)
-            .model(Map.of(
-                "userName", getUserName(userDocument),
-                    COMPANY_NAME, PUREZA_DEL_SUR,
-                SIGNATURE, DEFAULT_SIGNATURE
-            ))
-            .build();
+                .to(userDocument.getEmail())
+                .subject("Bienvenido a " + PUREZA_DEL_SUR)
+                .templateName(TEMPLATE_WELCOME)
+                .model(Map.of(
+                        "userName", getUserName(userDocument),
+                        COMPANY_NAME, PUREZA_DEL_SUR,
+                        SIGNATURE, DEFAULT_SIGNATURE
+                ))
+                .build();
 
         sendTemplatedEmail(request);
     }
@@ -102,15 +99,15 @@ public class EmailServiceImpl implements EmailService {
         model.put(COMPANY_NAME, PUREZA_DEL_SUR);
         model.put(SIGNATURE, DEFAULT_SIGNATURE);
         var saleOrder = saleOrderRepository.findById(saleOrderId)
-            .orElseThrow(() -> new IllegalArgumentException("Sale order not found: " + saleOrderId));
+                .orElseThrow(() -> new IllegalArgumentException("Sale order not found: " + saleOrderId));
         model.put("clientName", getUserName(saleOrder.getClient()));
         model.put("keys", saleOrder.getKeys());
         EmailRequest request = EmailRequest.builder()
-            .to(saleOrder.getClient().getEmail())
-            .subject("Gracias por tu compra")
-            .templateName(TEMPLATE_PURCHASE)
-            .model(model)
-            .build();
+                .to(saleOrder.getClient().getEmail())
+                .subject("Gracias por tu compra")
+                .templateName(TEMPLATE_PURCHASE)
+                .model(model)
+                .build();
 
         sendTemplatedEmail(request);
     }
@@ -125,17 +122,17 @@ public class EmailServiceImpl implements EmailService {
         model.put(SIGNATURE, DEFAULT_SIGNATURE);
 
         EmailRequest request = EmailRequest.builder()
-            .to(purezaDelSurGmail)
-            .subject("Contacto web")
-            .templateName(TEMPLATE_CONTACT)
-            .model(model)
-            .build();
+                .to(purezaDelSurGmail)
+                .subject("Contacto web")
+                .templateName(TEMPLATE_CONTACT)
+                .model(model)
+                .build();
 
         MimeMessage mimeMessage = createMimeMessageWithCC(
-            request.getTo(),
-            request.getSubject(),
-            processTemplate(request.getTemplateName(), request.getModel()),
-            CONTACT_CC_EMAIL
+                request.getTo(),
+                request.getSubject(),
+                processTemplate(request.getTemplateName(), request.getModel()),
+                CONTACT_CC_EMAIL
         );
 
         sendEmail(mimeMessage);
@@ -146,23 +143,23 @@ public class EmailServiceImpl implements EmailService {
         Objects.requireNonNull(email, "Email address cannot be null");
 
         EmailRequest request = EmailRequest.builder()
-            .to(email)
-            .subject("Email de prueba")
-            .templateName(TEMPLATE_TEST)
-            .model(Map.of(
-                    COMPANY_NAME, PUREZA_DEL_SUR,
-                SIGNATURE, DEFAULT_SIGNATURE
-            ))
-            .build();
+                .to(email)
+                .subject("Email de prueba")
+                .templateName(TEMPLATE_TEST)
+                .model(Map.of(
+                        COMPANY_NAME, PUREZA_DEL_SUR,
+                        SIGNATURE, DEFAULT_SIGNATURE
+                ))
+                .build();
 
         sendTemplatedEmail(request);
     }
 
     private void sendTemplatedEmail(EmailRequest request) {
         MimeMessage mimeMessage = createMimeMessage(
-            request.getTo(),
-            request.getSubject(),
-            processTemplate(request.getTemplateName(), request.getModel())
+                request.getTo(),
+                request.getSubject(),
+                processTemplate(request.getTemplateName(), request.getModel())
         );
         sendEmail(mimeMessage);
     }
@@ -222,6 +219,6 @@ public class EmailServiceImpl implements EmailService {
 
     private String getUserName(UserDocument userDocument) {
         return StringUtils.hasText(userDocument.getFullName()) ?
-               userDocument.getFullName() : "Nuevo Usuario";
+                userDocument.getFullName() : "Nuevo Usuario";
     }
 }

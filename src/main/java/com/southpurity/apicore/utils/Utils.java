@@ -1,8 +1,8 @@
 package com.southpurity.apicore.utils;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 @Log4j2

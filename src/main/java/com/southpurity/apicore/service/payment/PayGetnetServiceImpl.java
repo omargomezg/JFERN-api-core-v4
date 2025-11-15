@@ -35,6 +35,7 @@ import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.ProfileService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +43,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -77,14 +77,12 @@ public class PayGetnetServiceImpl implements PayService {
         PlaceDocument place = placeRepository.findById(request.getPlace().getId()).orElseThrow();
         var client = getClient(request.getClient());
         request.getItems().forEach(item -> {
-            
+
         });
-        request.getItems().forEach(item -> {
-            products.addAll(productRepository.markAsTaken(
-                    request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
-                    request.getPlace().getId(),
-                    item.getDescription()));
-        });
+        request.getItems().forEach(item -> products.addAll(productRepository.markAsTaken(
+                request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
+                request.getPlace().getId(),
+                item.getDescription())));
         var order = createOrder(client, products, request.getItems());
         PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
         var getnetRequest = getGetnetRequest(request, client, order);

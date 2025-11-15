@@ -3,11 +3,9 @@ package com.southpurity.apicore.persistence.model.saleorder;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.CurrencyEnum;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-
-import javax.validation.constraints.NotNull;
-
 
 @Data
 @Builder
