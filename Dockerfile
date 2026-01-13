@@ -1,4 +1,4 @@
-FROM gradle:7.6.3-jdk17-jammy AS build
+FROM gradle:8.10-jdk17 AS build
 WORKDIR /home/gradle/src
 
 COPY --chown=gradle:gradle build.gradle settings.gradle gradlew ./
