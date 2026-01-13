@@ -86,11 +86,9 @@ public class AuthController {
         if (idToken != null) {
             GoogleIdToken.Payload payload = idToken.getPayload();
 
-            // Extraemos la información del usuario
             String email = payload.getEmail();
             String name = (String) payload.get("name");
 
-            // Lógica de Negocio:
             UserDocument user;
             try {
                 user = userDetailsService.getByEmail(email);
