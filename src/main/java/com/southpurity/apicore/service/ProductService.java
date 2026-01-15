@@ -2,7 +2,6 @@ package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.dto.ProductFilter;
-import com.southpurity.apicore.persistence.model.PlaceDocument;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import org.springframework.data.domain.Page;

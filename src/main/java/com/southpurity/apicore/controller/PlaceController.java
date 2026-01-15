@@ -2,7 +2,6 @@ package com.southpurity.apicore.controller;
 
 import com.southpurity.apicore.dto.customer.MyAddressResponse;
 import com.southpurity.apicore.persistence.model.PlaceDocument;
-import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.service.CustomerService;
 import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
