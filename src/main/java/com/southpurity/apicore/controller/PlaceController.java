@@ -40,9 +40,9 @@ public class PlaceController {
     }
 
     @PatchMapping("/{place}/product/{product}")
-    public ResponseEntity<Boolean> releaseProduct(@PathVariable String place, @PathVariable String product) {
+    public ResponseEntity<Boolean> releaseProduct(@PathVariable("place") String place,
+            @PathVariable("product") String product) {
         return ResponseEntity.ok(placeService.releaseProduct(place, product));
     }
-
 
 }

@@ -24,9 +24,14 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return (UserDetails) userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
-        /*return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-                AuthorityUtils.createAuthorityList("ROLE_USER"));*/
+        return (UserDetails) userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
+        /*
+         * return new
+         * org.springframework.security.core.userdetails.User(user.getEmail(),
+         * user.getPassword(),
+         * AuthorityUtils.createAuthorityList("ROLE_USER"));
+         */
     }
 
     public UserDocument create(UserDocument user) {
@@ -54,6 +59,12 @@ public class JwtUserDetailsService implements UserDetailsService {
         var user = userRepository.findById(userDTO.getId()).orElseThrow();
         user.setTelephone(userDTO.getTelephone());
         user.setFullName(userDTO.getFullName());
+        user.setRut(userDTO.getRut());
+        user.setStatus(userDTO.getStatus());
+        user.setRole(userDTO.getRole());
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
+            user.setPassword(bcryptEncoder.encode(userDTO.getPassword()));
+        }
         userRepository.save(user);
     }
 }

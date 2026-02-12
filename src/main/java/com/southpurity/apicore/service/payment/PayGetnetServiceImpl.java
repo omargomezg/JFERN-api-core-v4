@@ -1,6 +1,7 @@
 package com.southpurity.apicore.service.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
 import com.placetopay.java_placetopay.Entities.Models.RedirectRequest;
@@ -80,7 +81,7 @@ public class PayGetnetServiceImpl implements PayService {
 
         });
         request.getItems().forEach(item -> products.addAll(productRepository.markAsTaken(
-                request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
+                item.getQuantity(),
                 request.getPlace().getId(),
                 item.getDescription())));
         var order = createOrder(client, products, request.getItems());
@@ -102,6 +103,7 @@ public class PayGetnetServiceImpl implements PayService {
         PaymentDetail paymentDetail = PaymentDetail.builder()
                 .requestId(response.requestId)
                 .processUrl(response.processUrl)
+                .paymentType(PaymentTypeEnum.GETNET)
                 .status(SaleOrderStatusEnum.PENDING.name()).build();
         order.setPaymentDetail(paymentDetail);
         order.getHistory().add(History.builder()
@@ -124,7 +126,7 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private SaleOrderDocument createOrder(UserDocument client, List<ProductDocument> products,
-                                          List<ItemsDto> itemsDto) {
+            List<ItemsDto> itemsDto) {
         List<ItemDocument> items = getItems(itemsDto);
         SaleOrderDocument saleOrder = SaleOrderDocument.builder()
                 .client(client)
@@ -149,7 +151,8 @@ public class PayGetnetServiceImpl implements PayService {
 
         Amount amount = Amount.builder()
                 .currency("CLP")
-                .total(String.valueOf(order.getItems().stream().mapToLong(item -> item.getPrice() * item.getQuantity()).sum()))
+                .total(String.valueOf(
+                        order.getItems().stream().mapToLong(item -> item.getPrice() * item.getQuantity()).sum()))
                 .build();
         Person buyer = new Person();
         buyer.setDocumentType("CLRUT");
@@ -203,7 +206,8 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     /**
-     * Every 24 hours, the system will check for pending payments and will update the status of the sale order
+     * Every 24 hours, the system will check for pending payments and will update
+     * the status of the sale order
      */
     @Scheduled(fixedDelay = 86400000)
     @Override
@@ -212,12 +216,15 @@ public class PayGetnetServiceImpl implements PayService {
                 .forEach(saleOrder -> {
                     PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
                     if (saleOrder.getPaymentDetail() != null) {
-                        var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
-                        log.info("Payment status: {}", resultQuery.toJsonObject());
-                        saleOrder.getHistory().add(History.builder()
-                                .message(String.format("Getnet, con tarea automatizada obtiene el estado: %s", resultQuery.getStatus().getStatus()))
-                                .build());
-                        addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+                        if (saleOrder.getPaymentDetail().getRequestId() != null) {
+                            var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+                            log.info("Payment status: {}", resultQuery.toJsonObject());
+                            saleOrder.getHistory().add(History.builder()
+                                    .message(String.format("Getnet, con tarea automatizada obtiene el estado: %s",
+                                            resultQuery.getStatus().getStatus()))
+                                    .build());
+                            addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+                        }
                     }
                 });
     }
@@ -260,15 +267,16 @@ public class PayGetnetServiceImpl implements PayService {
         saleOrder.getPaymentDetail().setReason(redirectInformation.getStatus().getReason());
         saleOrder.getPaymentDetail().setMessage(redirectInformation.getStatus().getMessage());
         saleOrder.getPaymentDetail().setDate(redirectInformation.getStatus().getDate());
-        //saleOrder.getPaymentDetail().setPayment(getDetails(redirectInformation));
+        // saleOrder.getPaymentDetail().setPayment(getDetails(redirectInformation));
         saleOrderRepository.save(saleOrder);
     }
 
     // TODO check if this is the correct way to get the details
-    private Map getDetails(RedirectInformation redirectInformation) {
+    private Map<String, Object> getDetails(RedirectInformation redirectInformation) {
         log.info(redirectInformation);
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.convertValue(redirectInformation, Map.class);
+        return objectMapper.convertValue(redirectInformation, new TypeReference<Map<String, Object>>() {
+        });
 
     }
 

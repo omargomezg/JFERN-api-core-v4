@@ -48,8 +48,10 @@ public class UserServiceImpl implements UserService {
         if (filter.getPlaceId() != null) {
             query.addCriteria(Criteria.where("addresses.place.id").is(filter.getPlaceId()));
         }
-        if (filter.getRole() != null) {
+        if (filter.getRole() != null && !filter.getRole().isEmpty()) {
             query.addCriteria(Criteria.where("role").in(filter.getRole()));
+        } else {
+            query.addCriteria(Criteria.where("role").in(RoleEnum.ADMINISTRATOR, RoleEnum.STOCKER));
         }
         query.with(Sort.by(Sort.Direction.DESC, "updatedDate"));
         var users = mongoTemplate.find(query, UserDocument.class);
@@ -113,11 +115,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserDocument> findById(String id) {
         var user = userRepository.findById(id);
-        if (user.isPresent()){
+        if (user.isPresent()) {
             if (user.get().getRole().equals(RoleEnum.CUSTOMER) && user.get().getPlaceId() != null) {
                 placeRepository.findById(user.get().getPlaceId()).ifPresent(user.get()::setPlace);
             }
-        }return user;
+        }
+        return user;
     }
 
     protected UserDTO mapToUserDTO(UserDocument user) {
@@ -128,8 +131,7 @@ public class UserServiceImpl implements UserService {
                 userDTO.setFullAddress(String.format("%s %s, %s",
                         address.get().getPlace().getAddress(),
                         address.get().getAddress(),
-                        address.get().getPlace().getCountry()
-                ));
+                        address.get().getPlace().getCountry()));
             }
         }
         return userDTO;

@@ -46,7 +46,7 @@ public class PlaceDocument {
     @JsonView(View.Administrator.class)
     private Short padlocks;
 
-    @JsonView(View.Administrator.class)
+    @JsonView(View.Stocker.class)
     private StatusPlaceEnum status;
 
     @ReadOnlyProperty

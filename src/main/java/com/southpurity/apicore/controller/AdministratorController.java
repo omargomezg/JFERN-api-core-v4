@@ -35,13 +35,13 @@ public class AdministratorController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<UserDTO> getClientById(@PathVariable String id) {
+    public ResponseEntity<UserDTO> getClientById(@PathVariable("id") String id) {
         return ResponseEntity.ok(userDetailsService.get(id));
     }
 
     @PutMapping("/user/{id}")
-    public ResponseEntity<Void> updateClient(@PathVariable String id,
-                                             @RequestBody UserDTO user) {
+    public ResponseEntity<Void> updateClient(@PathVariable("id") String id,
+            @RequestBody UserDTO user) {
         user.setId(id);
         userDetailsService.update(user);
         return ResponseEntity.ok().build();

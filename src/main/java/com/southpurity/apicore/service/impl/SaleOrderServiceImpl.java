@@ -94,6 +94,11 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
     }
 
+    @Override
+    public Optional<SaleOrderDocument> findByPaymentToken(String token) {
+        return saleOrderRepository.findByToken(token);
+    }
+
     private void releaseProduct(ProductDocument productDocument) {
         productDocument.setStatus(OrderStatusEnum.AVAILABLE);
         productRepository.save(productDocument);
@@ -112,5 +117,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         saleOrder.getPaymentDetail().setMessage(payment.getStatus().getMessage());
         saleOrder.getPaymentDetail().setDate(payment.getStatus().getDate());
         return saleOrderRepository.save(saleOrder);
+    }
+
+    @Override
+    public Optional<SaleOrderDocument> findById(String id) {
+        return saleOrderRepository.findById(id);
     }
 }

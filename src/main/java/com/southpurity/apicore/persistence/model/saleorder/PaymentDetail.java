@@ -3,11 +3,15 @@ package com.southpurity.apicore.persistence.model.saleorder;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.PaymentTypeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentDetail {
     @JsonView(View.Administrator.class)
     private Integer requestId;
@@ -30,5 +34,10 @@ public class PaymentDetail {
     @JsonView(View.Administrator.class)
     private PaymentTypeEnum paymentType;
 
+    @JsonView(View.Administrator.class)
+    private String token;
+
+    @JsonView(View.Administrator.class)
+    private String authorizationCode;
 
 }

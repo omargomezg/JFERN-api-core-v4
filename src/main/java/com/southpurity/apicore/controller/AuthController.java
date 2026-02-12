@@ -68,7 +68,8 @@ public class AuthController {
     }
 
     @PostMapping("/auth/restore/{code}")
-    public ResponseEntity<UserDocument> restorePassword(@RequestBody UserDocument user, @PathVariable String code) {
+    public ResponseEntity<UserDocument> restorePassword(@RequestBody UserDocument user,
+            @PathVariable("code") String code) {
         user.getPasswordReset().setCode(code);
         var result = userService.updatePwdWithCode(user);
         // send email

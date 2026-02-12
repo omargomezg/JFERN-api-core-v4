@@ -33,7 +33,7 @@ public class PaymentController {
     private final PayFactory payFactory;
 
     @GetMapping("/client/{id}")
-    public ResponseEntity<List<SaleOrderDocument>> getAllOrdersByUser(@PathVariable String id) {
+    public ResponseEntity<List<SaleOrderDocument>> getAllOrdersByUser(@PathVariable("id") String id) {
         return ResponseEntity.ok(saleOrderService.getAllOrdersByUser(id));
     }
 
@@ -56,8 +56,10 @@ public class PaymentController {
     }
 
     @GetMapping("/status/{saleOrderId}")
-    public ResponseEntity<PaymentResponse> getPaymentStatus(@PathVariable String saleOrderId) {
-        var service = payFactory.getStrategy(PaymentTypeEnum.GETNET);
+    public ResponseEntity<PaymentResponse> getPaymentStatus(@PathVariable("saleOrderId") String saleOrderId) {
+        var saleOrder = saleOrderService.findById(saleOrderId)
+                .orElseThrow();
+        var service = payFactory.getStrategy(saleOrder.getPaymentDetail().getPaymentType());
         var result = service.getPaymentStatus(saleOrderId);
         if (result.getPaymentStatus().equals("APPROVED")) {
             emailService.sendPurchaseEmail(saleOrderId);

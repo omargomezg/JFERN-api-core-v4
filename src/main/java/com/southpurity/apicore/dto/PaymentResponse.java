@@ -38,4 +38,7 @@ public class PaymentResponse {
 
     @JsonView(View.Customer.class)
     private String paymentStatus;
+
+    @JsonView(View.Anonymous.class)
+    private String token;
 }

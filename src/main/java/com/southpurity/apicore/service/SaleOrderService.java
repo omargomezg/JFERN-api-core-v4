@@ -19,4 +19,8 @@ public interface SaleOrderService {
 
     void asyncTaskForCheckIncompleteTransactions(String saleOrderId);
 
+    Optional<SaleOrderDocument> findByPaymentToken(String token);
+
+    Optional<SaleOrderDocument> findById(String id);
+
 }

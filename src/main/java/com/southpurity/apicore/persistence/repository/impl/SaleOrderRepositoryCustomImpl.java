@@ -12,7 +12,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
+
 
 @Repository
 public class SaleOrderRepositoryCustomImpl implements SaleOrderRepositoryCustom {
@@ -35,4 +36,12 @@ public class SaleOrderRepositoryCustomImpl implements SaleOrderRepositoryCustom 
                 filter.getPageable(),
                 () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), SaleOrderDocument.class));
     }
+
+    @Override
+    public Optional<SaleOrderDocument> findByToken(String token) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("paymentDetail.token").is(token));
+        return Optional.ofNullable(mongoTemplate.findOne(query, SaleOrderDocument.class));
+    }
+
 }

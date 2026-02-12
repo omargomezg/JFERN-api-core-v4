@@ -33,31 +33,32 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDocument> getById(@PathVariable String id) {
+    public ResponseEntity<UserDocument> getById(@PathVariable("id") String id) {
         var user = userService.findById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping
     public ResponseEntity<Page<UserDocument>> getAll(UserFilter filter,
-                                                     Pageable pageable) {
+            Pageable pageable) {
         var pageOfUsers = userService.findAllUsers(pageable, filter);
         return ResponseEntity.ok(pageOfUsers);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDocument> update(@PathVariable String id, @RequestBody UserDocument user) {
+    public ResponseEntity<UserDocument> update(@PathVariable("id") String id, @RequestBody UserDocument user) {
         return ResponseEntity.ok(userService.update(user));
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<UserDTO> updatePassword(@PathVariable String id, @RequestBody UserDTO user) {
+    public ResponseEntity<UserDTO> updatePassword(@PathVariable("id") String id, @RequestBody UserDTO user) {
         user.setId(id);
         return ResponseEntity.ok(userService.updatePassword(user));
     }
 
     @PutMapping("/{clientId}/place/{placeId}")
-    public ResponseEntity<UserDocument> updatePlace(@PathVariable String clientId, @PathVariable String placeId) {
+    public ResponseEntity<UserDocument> updatePlace(@PathVariable("clientId") String clientId,
+            @PathVariable("placeId") String placeId) {
         var client = userService.findById(clientId).orElseThrow();
         var place = placeService.findById(placeId).orElseThrow();
         client.setPlaceId(place.getId());

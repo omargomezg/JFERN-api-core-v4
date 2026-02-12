@@ -25,7 +25,7 @@ public class PublicController {
     private final EmailService emailService;
 
     @GetMapping("/test/{id}")
-    public ResponseEntity<Void> test(@PathVariable String id) {
+    public ResponseEntity<Void> test(@PathVariable("id") String id) {
         emailService.sendPurchaseEmail(id);
         return ResponseEntity.ok().build();
     }
@@ -36,7 +36,7 @@ public class PublicController {
     }
 
     @GetMapping("/water-drums/{id}/available")
-    public ResponseEntity<List<AvailableDrums>> availableWaterDrums(@PathVariable String id) {
+    public ResponseEntity<List<AvailableDrums>> availableWaterDrums(@PathVariable("id") String id) {
         return ResponseEntity.ok(customerService.getAvailableWaterDrums(id));
     }
 
