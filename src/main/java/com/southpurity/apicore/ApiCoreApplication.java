@@ -5,11 +5,9 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.southpurity.apicore.persistence.model.ConfigurationDocument;
-import com.southpurity.apicore.persistence.model.KangooJumps;
 import com.southpurity.apicore.persistence.model.UserDocument;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
-import com.southpurity.apicore.persistence.repository.KangooJumpsRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -23,8 +21,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 
 @SpringBootApplication
 @EnableMongoAuditing
@@ -36,7 +32,6 @@ public class ApiCoreApplication implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ConfigurationRepository configurationRepository;
     private final PasswordEncoder bcryptEncoder;
-    private final KangooJumpsRepository kangooJumpsRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(ApiCoreApplication.class, args);
@@ -82,18 +77,6 @@ public class ApiCoreApplication implements CommandLineRunner {
                     .returnUrl("http://localhost:4200/payment-result")
                     .build());
         }
-
-        Date start = new Date();
-        //create end and add 1 hour to start date
-        Date end = new Date(start.getTime() + 3600000);
-
-        KangooJumps service = KangooJumps.builder()
-                .shoes(List.of("M", "L", "XL", "M"))
-                .start(start)
-                .end(end)
-                .capacity((byte) 5)
-                .build();
-        kangooJumpsRepository.save(service);
 
     }
 }

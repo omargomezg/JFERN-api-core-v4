@@ -1,0 +1,17 @@
+package com.southpurity.apicore.exception;
+
+import com.southpurity.apicore.dto.ErrorRecord;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorRecord> handleRuntime(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT) .body(new ErrorRecord("Error interno: " + ex.getMessage()));
+    }
+
+}
