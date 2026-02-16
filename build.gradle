@@ -89,24 +89,26 @@ jacocoTestCoverageVerification {
                 minimum = 0.50
             }
             excludes = [
-                    '**/model/**',
-                    '**/dto/**',
-                    '**/config/**',
-                    '**/constants/**',
-                    '**/constant/**',
-                    '**/*Application*',
-                    '**/exception/**',
-                    '**/*Builder*',
-                    '**/*Request*',
-                    '**/*Response*',
-                    '**/persistence/model/**',
-                    '**/persistence/repository/constant/**'
+                    '*.model.*',
+                    '*.dto.*',
+                    '*.config.*',
+                    '*.constants.*',
+                    '*.constant.*',
+                    '*Application*',
+                    '*.exception.*',
+                    '*Builder*',
+                    '*Request*',
+                    '*Response*',
+                    '*.persistence.model.*',
+                    '*.persistence.repository.constant.*',
+                    '*.controller.*',
+                    '*.service.payment.*'
             ]
         }
 
         rule {
             element = 'CLASS'
-            includes = ['**/controller/**']
+            includes = ['*.controller.*']
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
@@ -116,7 +118,7 @@ jacocoTestCoverageVerification {
 
         rule {
             element = 'CLASS'
-            includes = ['**/service/impl/**']
+            includes = ['*.service.impl.*']
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'

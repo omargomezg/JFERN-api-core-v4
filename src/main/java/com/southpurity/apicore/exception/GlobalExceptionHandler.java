@@ -11,7 +11,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorRecord> handleRuntime(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT) .body(new ErrorRecord("Error interno: " + ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT) .body(new ErrorRecord(ex.getMessage()));
     }
 
 }
