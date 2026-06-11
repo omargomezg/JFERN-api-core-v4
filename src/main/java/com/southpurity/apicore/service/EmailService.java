@@ -2,12 +2,13 @@ package com.southpurity.apicore.service;
 
 import com.southpurity.apicore.dto.ContactRequest;
 import com.southpurity.apicore.persistence.model.UserDocument;
+import org.springframework.lang.NonNull;
 
 public interface EmailService {
 
-    void sendRestorePasswordEmail(UserDocument userDocument, String code);
+    void sendRestorePasswordEmail(@NonNull UserDocument userDocument,@NonNull String code);
 
-    void sendWelcomeEmail(UserDocument userDocument);
+    void sendWelcomeEmail(@NonNull UserDocument userDocument);
 
     void sendPurchaseEmail(String saleOrderId);
 
