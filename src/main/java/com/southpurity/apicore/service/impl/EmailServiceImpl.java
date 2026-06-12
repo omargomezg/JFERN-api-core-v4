@@ -1,17 +1,15 @@
 package com.southpurity.apicore.service.impl;
 
-import com.southpurity.apicore.dto.ContactRequest;
-import com.southpurity.apicore.persistence.model.UserDocument;
-import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
-import com.southpurity.apicore.service.EmailService;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import com.southpurity.apicore.persistence.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -19,10 +17,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.southpurity.apicore.dto.ContactRequest;
+import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
+import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
+import com.southpurity.apicore.service.EmailService;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
@@ -46,14 +53,15 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender javaMailSender;
     private final SaleOrderRepository saleOrderRepository;
+    private final UserRepository userRepository;
     private final Configuration freemarkerConfiguration;
+    private final ConfigurationRepository configurationRepository;
 
     @Value("${spring.mail.username}")
     private String purezaDelSurGmail;
 
     @Override
-    public void sendRestorePasswordEmail(UserDocument userDocument, String code) {
-        Objects.requireNonNull(userDocument, "User document cannot be null");
+    public void sendRestorePasswordEmail(@NonNull UserDocument userDocument, @NonNull String code) {
         Objects.requireNonNull(code, "Verification code cannot be null");
 
         EmailRequest request = EmailRequest.builder()
@@ -70,11 +78,11 @@ public class EmailServiceImpl implements EmailService {
                 .build();
 
         sendTemplatedEmail(request);
+        log.info("Recovery password code was send to {} with code {}", userDocument.getEmail(), code);
     }
 
     @Override
-    public void sendWelcomeEmail(UserDocument userDocument) {
-        Objects.requireNonNull(userDocument, "User document cannot be null");
+    public void sendWelcomeEmail(@NonNull UserDocument userDocument) {
         Objects.requireNonNull(userDocument.getEmail(), "User email cannot be null");
 
         EmailRequest request = EmailRequest.builder()
@@ -89,12 +97,11 @@ public class EmailServiceImpl implements EmailService {
                 .build();
 
         sendTemplatedEmail(request);
+        log.info("Welcome mail was send to {}", userDocument.getEmail());
     }
 
     @Override
-    public void sendPurchaseEmail(String saleOrderId) {
-        Objects.requireNonNull(saleOrderId, "Sale order ID cannot be null");
-
+    public void sendPurchaseEmail(@NonNull String saleOrderId) {
         var model = new HashMap<String, Object>();
         model.put(COMPANY_NAME, PUREZA_DEL_SUR);
         model.put(SIGNATURE, DEFAULT_SIGNATURE);
@@ -150,6 +157,29 @@ public class EmailServiceImpl implements EmailService {
                         COMPANY_NAME, PUREZA_DEL_SUR,
                         SIGNATURE, DEFAULT_SIGNATURE
                 ))
+                .build();
+
+        sendTemplatedEmail(request);
+    }
+
+    @Override
+    public void sendPasswordResetByAdmin(@NonNull String id,@NonNull String password) {
+        var date = LocalDate.now();
+        var formatCL = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var model = new HashMap<String, Object>();
+        model.put(COMPANY_NAME, PUREZA_DEL_SUR);
+        model.put(SIGNATURE, DEFAULT_SIGNATURE);
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        model.put("userName", user.getFullName());
+        model.put("email", user.getEmail());
+        model.put("newPassword", password);
+        model.put("date", date.format(formatCL));
+        EmailRequest request = EmailRequest.builder()
+                .to(user.getEmail())
+                .subject("Tu contraseña ha cambiado")
+                .templateName("password-updated-by-admin.flth")
+                .model(model)
                 .build();
 
         sendTemplatedEmail(request);

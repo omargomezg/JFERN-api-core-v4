@@ -39,7 +39,7 @@
             <tr>
               <td>
                 <div class="text" style="padding: 0 2.5em; text-align: center;">
-                  <h2>Contacto web - ${names} ${lastName} necesita lo siguiente:</h2>
+                  <h2>Contacto web - ${contactName} necesita lo siguiente:</h2>
                   <h3>${message}</h3>
                   <p><a href="mailto:${email}" class="btn btn-primary">Responder al correo ${email}</a></p>
                   <h3>Tambien puedes llamar al ${telephone}</h3>

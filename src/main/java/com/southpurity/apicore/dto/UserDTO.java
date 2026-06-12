@@ -48,4 +48,6 @@ public class UserDTO {
     @Builder.Default
     @JsonView({View.Stocker.class, View.Customer.class})
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
+
+    private Boolean sendEmail;
 }
