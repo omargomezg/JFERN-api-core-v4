@@ -1,10 +1,13 @@
 package com.southpurity.apicore.service.impl;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.southpurity.apicore.persistence.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.mail.MailException;
@@ -50,6 +53,7 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender javaMailSender;
     private final SaleOrderRepository saleOrderRepository;
+    private final UserRepository userRepository;
     private final Configuration freemarkerConfiguration;
     private final ConfigurationRepository configurationRepository;
 
@@ -97,9 +101,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendPurchaseEmail(String saleOrderId) {
-        Objects.requireNonNull(saleOrderId, "Sale order ID cannot be null");
-
+    public void sendPurchaseEmail(@NonNull String saleOrderId) {
         var model = new HashMap<String, Object>();
         model.put(COMPANY_NAME, PUREZA_DEL_SUR);
         model.put(SIGNATURE, DEFAULT_SIGNATURE);
@@ -155,6 +157,29 @@ public class EmailServiceImpl implements EmailService {
                         COMPANY_NAME, PUREZA_DEL_SUR,
                         SIGNATURE, DEFAULT_SIGNATURE
                 ))
+                .build();
+
+        sendTemplatedEmail(request);
+    }
+
+    @Override
+    public void sendPasswordResetByAdmin(@NonNull String id,@NonNull String password) {
+        var date = LocalDate.now();
+        var formatCL = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var model = new HashMap<String, Object>();
+        model.put(COMPANY_NAME, PUREZA_DEL_SUR);
+        model.put(SIGNATURE, DEFAULT_SIGNATURE);
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        model.put("userName", user.getFullName());
+        model.put("email", user.getEmail());
+        model.put("newPassword", password);
+        model.put("date", date.format(formatCL));
+        EmailRequest request = EmailRequest.builder()
+                .to(user.getEmail())
+                .subject("Tu contraseña ha cambiado")
+                .templateName("password-updated-by-admin.flth")
+                .model(model)
                 .build();
 
         sendTemplatedEmail(request);

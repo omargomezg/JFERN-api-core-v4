@@ -3,6 +3,7 @@ package com.southpurity.apicore.controller;
 import com.southpurity.apicore.dto.UserDTO;
 import com.southpurity.apicore.dto.UserFilter;
 import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.service.EmailService;
 import com.southpurity.apicore.service.PlaceService;
 import com.southpurity.apicore.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class UserController {
 
     private final UserService userService;
     private final PlaceService placeService;
+    private final EmailService emailService;
 
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody UserDTO user) {
@@ -53,7 +55,11 @@ public class UserController {
     @PutMapping("/{id}/password")
     public ResponseEntity<UserDTO> updatePassword(@PathVariable("id") String id, @RequestBody UserDTO user) {
         user.setId(id);
-        return ResponseEntity.ok(userService.updatePassword(user));
+        var savedUser = userService.updatePassword(user);
+        if (user.getSendEmail()) {
+            emailService.sendPasswordResetByAdmin(id, user.getPassword());
+        }
+        return ResponseEntity.ok(savedUser);
     }
 
     @PutMapping("/{clientId}/place/{placeId}")

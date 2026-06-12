@@ -10,10 +10,12 @@ public interface EmailService {
 
     void sendWelcomeEmail(@NonNull UserDocument userDocument);
 
-    void sendPurchaseEmail(String saleOrderId);
+    void sendPurchaseEmail(@NonNull String saleOrderId);
 
     void sendContactEmail(ContactRequest contactRequest);
 
     void sendTestEmail(String email);
+
+    void sendPasswordResetByAdmin(@NonNull String id, @NonNull String password);
 
 }
