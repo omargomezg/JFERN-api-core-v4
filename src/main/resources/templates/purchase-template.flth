@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Confirmación de compra</title>
+    <#include "email.css">
+</head>
+
+<body width="100%" style="margin: 0; padding: 0; background-color: #f1f1f1; font-family: Arial, sans-serif;">
+<center style="width: 100%; background-color: #fff; padding: 10px 20px;">
+    <div style="max-width: 600px; margin: 0 auto;" class="email-container">
+        <!-- LOGO -->
+        <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td style="padding: 20px 0; text-align: center;">
+                    <img src="https://www.purezadelsur.cl/assets/full_logo.webp" alt="Pureza del Sur"
+                         style="width: 250px; max-width: 100%; height: auto; margin: auto; display: block;">
+                </td>
+            </tr>
+        </table>
+
+        <!-- MENSAJE PRINCIPAL -->
+        <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+               style="background-color: #ffffff; padding: 30px 20px;">
+            <tr>
+                <td style="font-size: 16px; line-height: 1.5; color: #333333;">
+                    <p>Hola <strong>${clientName}</strong>,</p>
+                    <p>¡Gracias por tu compra! 🎉 Tu pedido se ha procesado correctamente y ya está registrado en nuestro sistema.</p>
+                    <p style="margin-top: 20px;">Aquí tienes el detalle de tu orden:</p>
+
+                    <!-- TABLA DE DETALLES -->
+                    <table role="presentation" border="1" cellspacing="0" cellpadding="8" width="100%"
+                           style="border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: center;">
+                        <thead style="background-color: #2c3e50; color: #ffffff;">
+                        <tr>
+                            <th>Bidón</th>
+                            <th>Clave</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <#list keys as key>
+                            <tr style="background-color: <#if key?index % 2 == 0>#ffffff<#else>#f8f9fa</#if>;">
+                                <td>${key.key}</td>
+                                <td>${key.value}</td>
+                            </tr>
+                        </#list>
+                        </tbody>
+                    </table>
+                    <div style="font-size: 14px; line-height: 1.5; color: #333333; padding: 25px 2px;">
+                        ¿Tienes alguna duda? Estamos para ayudarte. <a href="tel:+56984428760">+56 9 8442 8760</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- FOOTER -->
+        <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+               style="background-color: #f9f9f9; padding: 20px;">
+            <tr>
+                <td style="font-size: 13px; line-height: 1.4; color: #666666; text-align: center;">
+                    <h3 style="margin: 0; color: #2c3e50;">Pureza del Sur</h3>
+                    <p style="margin: 5px 0;">Visítanos en <a href="https://www.purezadelsur.cl" style="color: #2c3e50; text-decoration: none;">www.purezadelsur.cl</a></p>
+                    <p style="margin: 5px 0;">Agua purificada de la mejor calidad, con un proceso de 7 etapas para que disfrutes de un agua pura y cristalina.</p>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</center>
+</body>
+</html>

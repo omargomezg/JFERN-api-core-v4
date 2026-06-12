@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import com.southpurity.apicore.persistence.model.constant.UserStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,13 +14,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -36,7 +39,7 @@ public class UserDocument implements UserDetails {
     private List<AddressDocument> addresses = new ArrayList<>();
 
     @Id
-    @JsonView({View.Administrator.class})
+    @JsonView({View.Customer.class, View.Stocker.class})
     private String id;
 
     @JsonView({View.Customer.class, View.Stocker.class})
@@ -78,6 +81,15 @@ public class UserDocument implements UserDetails {
 
     @JsonView(View.Anonymous.class)
     private PasswordReset passwordReset;
+
+    private String placeId;
+
+    @DocumentReference(lazy = true)
+    private transient List<SaleOrderDocument> saleOrders;
+
+    @Transient
+    @JsonView(View.Customer.class)
+    private PlaceDocument place;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

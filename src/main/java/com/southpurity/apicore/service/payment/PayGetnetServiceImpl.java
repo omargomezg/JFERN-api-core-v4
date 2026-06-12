@@ -1,6 +1,7 @@
-package com.southpurity.apicore.service.impl;
+package com.southpurity.apicore.service.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
 import com.placetopay.java_placetopay.Entities.Models.RedirectRequest;
@@ -24,6 +25,7 @@ import com.southpurity.apicore.persistence.model.constant.CurrencyEnum;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.PaymentTypeEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.History;
 import com.southpurity.apicore.persistence.model.saleorder.ItemDocument;
 import com.southpurity.apicore.persistence.model.saleorder.Key;
 import com.southpurity.apicore.persistence.model.saleorder.PaymentDetail;
@@ -33,8 +35,8 @@ import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
 import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
 import com.southpurity.apicore.persistence.repository.UserRepository;
-import com.southpurity.apicore.service.PayService;
 import com.southpurity.apicore.service.ProfileService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -58,6 +62,7 @@ public class PayGetnetServiceImpl implements PayService {
     private final ConfigurationRepository configurationRepository;
     private final PlaceRepository placeRepository;
     private final ProfileService profileService;
+    private final ObjectMapper objectMapper;
 
     @Value("${getnet.endpoint}")
     private String endpoint;
@@ -68,31 +73,46 @@ public class PayGetnetServiceImpl implements PayService {
 
     @Transactional
     @Override
-    public PaymentResponse getPayment(PaymentRequest request) {
+    public PaymentResponse getPayment(@NotNull PaymentRequest request) {
+        List<ProductDocument> products = new ArrayList<>();
         PlaceDocument place = placeRepository.findById(request.getPlace().getId()).orElseThrow();
         var client = getClient(request.getClient());
-        var products = productRepository.markAsTaken(request.getItems().stream().mapToInt(ItemsDto::getQuantity).sum(),
-                request.getPlace().getId());
+        request.getItems().forEach(item -> {
+
+        });
+        request.getItems().forEach(item -> products.addAll(productRepository.markAsTaken(
+                item.getQuantity(),
+                request.getPlace().getId(),
+                item.getDescription())));
         var order = createOrder(client, products, request.getItems());
         PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
         var getnetRequest = getGetnetRequest(request, client, order);
         RedirectRequest redirectRequest = toRedirectRequest(getnetRequest);
         RedirectResponse response = placeToPay.request(redirectRequest);
         if (!response.isSuccessful()) {
+            var message = response.getStatus().getMessage();
             productRepository.markAsAvailable(products.stream().map(BaseDocument::getId).toList(), place.getId());
             order.setStatus(SaleOrderStatusEnum.UNKNOWN);
+            order.getHistory().add(History.builder()
+                    .message(String.format("No se pudo procesar el pago en Getnet: %s", message))
+                    .build());
             saleOrderRepository.save(order);
             log.error(response.getStatus().getMessage());
-            return PaymentResponse.builder().message(response.getStatus().getMessage()).build();
+            return PaymentResponse.builder().message(message).build();
         }
         PaymentDetail paymentDetail = PaymentDetail.builder()
                 .requestId(response.requestId)
                 .processUrl(response.processUrl)
+                .paymentType(PaymentTypeEnum.GETNET)
                 .status(SaleOrderStatusEnum.PENDING.name()).build();
         order.setPaymentDetail(paymentDetail);
+        order.getHistory().add(History.builder()
+                .message("Pago enviado a getnet con el id " + response.getRequestId())
+                .build());
         saleOrderRepository.save(order);
         return PaymentResponse.builder().url(response.getProcessUrl())
                 .requestId(response.getRequestId())
+                .saleOrderId(order.getId())
                 .processUrl(response.getProcessUrl())
                 .paymentStatus(SaleOrderStatusEnum.PENDING.name())
                 .build();
@@ -106,7 +126,7 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private SaleOrderDocument createOrder(UserDocument client, List<ProductDocument> products,
-                                          List<ItemsDto> itemsDto) {
+            List<ItemsDto> itemsDto) {
         List<ItemDocument> items = getItems(itemsDto);
         SaleOrderDocument saleOrder = SaleOrderDocument.builder()
                 .client(client)
@@ -131,7 +151,8 @@ public class PayGetnetServiceImpl implements PayService {
 
         Amount amount = Amount.builder()
                 .currency("CLP")
-                .total(String.valueOf(order.getItems().stream().mapToLong(item -> item.getPrice() * item.getQuantity()).sum()))
+                .total(String.valueOf(
+                        order.getItems().stream().mapToLong(item -> item.getPrice() * item.getQuantity()).sum()))
                 .build();
         Person buyer = new Person();
         buyer.setDocumentType("CLRUT");
@@ -151,7 +172,6 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private RedirectRequest toRedirectRequest(GetnetRequest getnetRequest) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return new RedirectRequest(objectMapper.writeValueAsString(getnetRequest));
         } catch (JsonProcessingException e) {
@@ -162,46 +182,51 @@ public class PayGetnetServiceImpl implements PayService {
 
     @Override
     public PaymentResponse getPaymentStatus(String saleOrderId) {
-        var saleOrder = saleOrderRepository.findById(saleOrderId);
-        if (saleOrder.isEmpty() || saleOrder.get().getPaymentDetail() == null) {
-            return PaymentResponse.builder()
-                    .paymentStatus("NOT_EXISTS")
-                    .build();
-        }
-        PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
-        var resultQuery = placeToPay.query(saleOrder.get().getPaymentDetail().getRequestId().toString());
-        log.info("Payment status: {}", resultQuery.toJsonObject());
-        if (resultQuery.getStatus().isApproved()) {
-            saleOrder.get().getProducts().forEach(product -> saleOrder.get().getKeys().add(productToKey(product)));
-            productRepository.deleteAll(saleOrder.get().getProducts());
-            saleOrder.get().getProducts().clear();
-        }
-        addPaymentStatusToSaleOrder(resultQuery, saleOrder.get());
-        return PaymentResponse.builder()
-                .products(
-                        saleOrder.get().getKeys().stream()
-                                .map(this::productToResponse)
-                                .collect(Collectors.toSet()))
-                .paymentStatus(resultQuery.getStatus().getStatus())
-                .build();
+        PaymentResponse response = new PaymentResponse();
+        saleOrderRepository.findById(saleOrderId).ifPresentOrElse(saleOrder -> {
+            PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
+            var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+            saleOrder.getHistory().add(History.builder()
+                    .message(String.format("Se obtiene el estado Getnet: %s", resultQuery.getStatus().getStatus()))
+                    .build());
+            log.info("Payment status: {}", resultQuery.toJsonObject());
+            if (resultQuery.getStatus().isApproved()) {
+                saleOrder.getProducts().forEach(product -> saleOrder.getKeys().add(productToKey(product)));
+                productRepository.deleteAll(saleOrder.getProducts());
+                saleOrder.getProducts().clear();
+            }
+            addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+            response.setProducts(
+                    saleOrder.getKeys().stream()
+                            .map(this::productToResponse)
+                            .collect(Collectors.toSet()));
+            response.setPaymentStatus(resultQuery.getStatus().getStatus());
+        }, () -> response.setPaymentStatus("NOT_EXISTS"));
+        return response;
     }
 
     /**
-     * Every 24 hours, the system will check for pending payments and will update the status of the sale order
+     * Every 24 hours, the system will check for pending payments and will update
+     * the status of the sale order
      */
     @Scheduled(fixedDelay = 86400000)
     @Override
     public void scheduledTaskForPendings() {
-        var saleOrders = saleOrderRepository.findAllByStatus(SaleOrderStatusEnum.PENDING);
-        saleOrders.forEach(saleOrder -> {
-            log.info("Updating payment status for sale order {}", saleOrder.getId());
-            PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
-            if (saleOrder.getPaymentDetail() != null) {
-                var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
-                log.info("Payment status: {}", resultQuery.toJsonObject());
-                addPaymentStatusToSaleOrder(resultQuery, saleOrder);
-            }
-        });
+        saleOrderRepository.findAllByStatusIn(SaleOrderStatusEnum.isPending()).parallelStream()
+                .forEach(saleOrder -> {
+                    PlaceToPay placeToPay = new PlaceToPay(login, trankey, getUrl());
+                    if (saleOrder.getPaymentDetail() != null) {
+                        if (saleOrder.getPaymentDetail().getRequestId() != null) {
+                            var resultQuery = placeToPay.query(saleOrder.getPaymentDetail().getRequestId().toString());
+                            log.info("Payment status: {}", resultQuery.toJsonObject());
+                            saleOrder.getHistory().add(History.builder()
+                                    .message(String.format("Getnet, con tarea automatizada obtiene el estado: %s",
+                                            resultQuery.getStatus().getStatus()))
+                                    .build());
+                            addPaymentStatusToSaleOrder(resultQuery, saleOrder);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -229,6 +254,7 @@ public class PayGetnetServiceImpl implements PayService {
     }
 
     private void addPaymentStatusToSaleOrder(RedirectInformation redirectInformation, SaleOrderDocument saleOrder) {
+        log.info("Updating sale order {} status to {}", saleOrder.getId(), redirectInformation.getStatus().getStatus());
         SaleOrderStatusEnum status = SaleOrderStatusEnum.valueOf(redirectInformation.getStatus().getStatus());
         saleOrder.setStatus(status);
         if (status.equals(SaleOrderStatusEnum.REJECTED)) {
@@ -237,7 +263,21 @@ public class PayGetnetServiceImpl implements PayService {
                 productRepository.save(product);
             });
         }
+        saleOrder.getPaymentDetail().setStatus(redirectInformation.getStatus().getStatus());
+        saleOrder.getPaymentDetail().setReason(redirectInformation.getStatus().getReason());
+        saleOrder.getPaymentDetail().setMessage(redirectInformation.getStatus().getMessage());
+        saleOrder.getPaymentDetail().setDate(redirectInformation.getStatus().getDate());
+        // saleOrder.getPaymentDetail().setPayment(getDetails(redirectInformation));
         saleOrderRepository.save(saleOrder);
+    }
+
+    // TODO check if this is the correct way to get the details
+    private Map<String, Object> getDetails(RedirectInformation redirectInformation) {
+        log.info(redirectInformation);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.convertValue(redirectInformation, new TypeReference<Map<String, Object>>() {
+        });
+
     }
 
     private URL getUrl() {

@@ -2,8 +2,11 @@ package com.southpurity.apicore.service.impl;
 
 import com.southpurity.apicore.dto.ProductDTO;
 import com.southpurity.apicore.dto.ProductFilter;
+import com.southpurity.apicore.exception.ProductException;
+import com.southpurity.apicore.persistence.model.Price;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
+import com.southpurity.apicore.persistence.model.constant.PriceTypeEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
 import com.southpurity.apicore.persistence.repository.PlaceRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
@@ -19,6 +22,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -55,11 +63,24 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDocument create(ProductDTO productDTO) {
         var place = placeRepository.findById(productDTO.getPlace()).orElseThrow();
+        productRepository.findByPlaceAndLockNumber(place, productDTO.getLockNumber()).ifPresent(product -> {
+            throw new ProductException("Ya existe un producto con el número de candado " + productDTO.getLockNumber());
+        });
+        Set<Price> prices = new HashSet<>();
+        prices.add(Price.builder()
+                .identifier(PriceTypeEnum.BOTTLE)
+                .amount(productDTO.getPriceBottle())
+                .build());
+        prices.add(Price.builder()
+                .identifier(PriceTypeEnum.REFILL)
+                .amount(productDTO.getPriceRefill())
+                .build());
         return productRepository.save(ProductDocument.builder()
-                .shortName("Bidón de 20 litros")
+                .shortName(productDTO.getShortName())
                 .place(place)
                 .lockNumber(productDTO.getLockNumber())
                 .padlockKey(productDTO.getPadlockKey())
+                        .prices(prices)
                 .build());
     }
 

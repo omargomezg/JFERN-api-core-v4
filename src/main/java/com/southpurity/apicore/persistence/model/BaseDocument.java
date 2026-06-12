@@ -12,16 +12,15 @@ import java.util.Date;
 @Data
 public abstract class BaseDocument {
     @Id
-    @JsonView(View.Administrator.class)
+    @JsonView({ View.Administrator.class, View.Stocker.class })
     private String id;
 
-    @JsonView(View.Customer.class)
+    @JsonView({ View.Customer.class, View.Stocker.class })
     @CreatedDate
     private Date createdDate;
 
     @JsonView(View.Administrator.class)
     @LastModifiedDate
     private Date updatedDate;
-
 
 }

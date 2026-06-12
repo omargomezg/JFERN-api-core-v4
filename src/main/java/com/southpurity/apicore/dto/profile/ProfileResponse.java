@@ -3,6 +3,7 @@ package com.southpurity.apicore.dto.profile;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,8 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class ProfileResponse {
+
+    @NotNull(message = "id is required")
     @JsonView({View.Customer.class, View.Stocker.class})
     private String id;
 
@@ -31,4 +34,8 @@ public class ProfileResponse {
 
     @JsonView({View.Customer.class, View.Stocker.class})
     private String address;
+
+    @JsonView({View.Customer.class, View.Stocker.class})
+    private String city;
+
 }

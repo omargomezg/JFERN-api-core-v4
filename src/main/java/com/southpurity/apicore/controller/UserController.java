@@ -3,9 +3,10 @@ package com.southpurity.apicore.controller;
 import com.southpurity.apicore.dto.UserDTO;
 import com.southpurity.apicore.dto.UserFilter;
 import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.service.EmailService;
+import com.southpurity.apicore.service.PlaceService;
 import com.southpurity.apicore.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final ConversionService conversionService;
+    private final PlaceService placeService;
+    private final EmailService emailService;
 
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody UserDTO user) {
@@ -33,27 +35,40 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDocument> getById(@PathVariable String id) {
+    public ResponseEntity<UserDocument> getById(@PathVariable("id") String id) {
         var user = userService.findById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping
     public ResponseEntity<Page<UserDocument>> getAll(UserFilter filter,
-                                                     Pageable pageable) {
+            Pageable pageable) {
         var pageOfUsers = userService.findAllUsers(pageable, filter);
         return ResponseEntity.ok(pageOfUsers);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable String id) {
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<UserDocument> update(@PathVariable("id") String id, @RequestBody UserDocument user) {
+        return ResponseEntity.ok(userService.update(user));
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<UserDTO> updatePassword(@PathVariable String id, @RequestBody UserDTO user) {
+    public ResponseEntity<UserDTO> updatePassword(@PathVariable("id") String id, @RequestBody UserDTO user) {
         user.setId(id);
-        return ResponseEntity.ok(userService.updatePassword(user));
+        var savedUser = userService.updatePassword(user);
+        if (user.getSendEmail()) {
+            emailService.sendPasswordResetByAdmin(id, user.getPassword());
+        }
+        return ResponseEntity.ok(savedUser);
+    }
+
+    @PutMapping("/{clientId}/place/{placeId}")
+    public ResponseEntity<UserDocument> updatePlace(@PathVariable("clientId") String clientId,
+            @PathVariable("placeId") String placeId) {
+        var client = userService.findById(clientId).orElseThrow();
+        var place = placeService.findById(placeId).orElseThrow();
+        client.setPlaceId(place.getId());
+        return ResponseEntity.ok(userService.update(client));
     }
 
 }

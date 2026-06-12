@@ -1,14 +1,21 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.11'
-    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'org.springframework.boot' version '3.5.11'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.southpurity'
-version = '0.0.8-SNAPSHOT'
-sourceCompatibility = '17'
+version = '0.1.5-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
+    maven { url 'https://repo.spring.io/release' }
     mavenCentral()
 }
 
@@ -23,23 +30,117 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-freemarker'
     implementation 'org.modelmapper:modelmapper:3.1.1'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'com.github.transbankdevelopers:transbank-sdk-java:6.0.0'
+    implementation 'com.google.code.gson:gson'
+    implementation 'com.google.api-client:google-api-client:2.2.0'
+
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
-    testImplementation 'org.springframework.security:spring-security-test'
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.26'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
-tasks.named('test') {
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/model/**',
+                    '**/dto/**',
+                    '**/config/**',
+                    '**/constants/**',
+                    '**/constant/**',
+                    '**/*Application*',
+                    '**/exception/**',
+                    '**/*Builder*',
+                    '**/*Request*',
+                    '**/*Response*',
+                    '**/persistence/model/**',
+                    '**/persistence/repository/constant/**'
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+            excludes = [
+                    '*.model.*',
+                    '*.dto.*',
+                    '*.config.*',
+                    '*.constants.*',
+                    '*.constant.*',
+                    '*Application*',
+                    '*.exception.*',
+                    '*Builder*',
+                    '*Request*',
+                    '*Response*',
+                    '*.persistence.model.*',
+                    '*.persistence.repository.constant.*',
+                    '*.controller.*',
+                    '*.service.payment.*'
+            ]
+        }
+
+        rule {
+            element = 'CLASS'
+            includes = ['*.controller.*']
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+
+        rule {
+            element = 'CLASS'
+            includes = ['*.service.impl.*']
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+    jacoco {
+        enabled = true
+    }
     useJUnitPlatform()
 }
+
+check.dependsOn jacocoTestCoverageVerification
 
 jar {
     enabled = false

@@ -1,11 +1,15 @@
 package com.southpurity.apicore.persistence.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+@Data
 @Builder
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AddressDocument {
     @DBRef
     private PlaceDocument place;

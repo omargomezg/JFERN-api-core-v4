@@ -1,4 +1,4 @@
-package com.southpurity.apicore.service;
+package com.southpurity.apicore.service.payment;
 
 import com.southpurity.apicore.dto.PaymentResponse;
 import com.southpurity.apicore.dto.payment.PaymentRequest;

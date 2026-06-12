@@ -1,154 +1,254 @@
 package com.southpurity.apicore.service.impl;
 
-import com.southpurity.apicore.dto.ContactRequest;
-import com.southpurity.apicore.persistence.model.UserDocument;
-import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
-import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
-import com.southpurity.apicore.service.EmailService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import com.southpurity.apicore.persistence.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
-import freemarker.template.Configuration;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.lang.NonNull;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.util.StringUtils;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import java.util.Map;
+import com.southpurity.apicore.dto.ContactRequest;
+import com.southpurity.apicore.persistence.model.UserDocument;
+import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
+import com.southpurity.apicore.persistence.repository.SaleOrderRepository;
+import com.southpurity.apicore.service.EmailService;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class EmailServiceImpl implements EmailService {
 
+    private static final String ENCODING = "UTF-8";
+    private static final String PUREZA_DEL_SUR = "Pureza del Sur";
+    private static final String CONTACT_CC_EMAIL = "caysensur@gmail.com";
+    private static final String DEFAULT_SIGNATURE = "Atentamente,\nPureza del Sur";
+
+    private static final String TEMPLATE_RESTORE_PASSWORD = "restore-password-template.flth";
+    private static final String TEMPLATE_PURCHASE = "purchase-template.flth";
+    private static final String TEMPLATE_CONTACT = "contact-template.flth";
+    private static final String TEMPLATE_WELCOME = "welcome-template.flth";
+    private static final String TEMPLATE_TEST = "test-template.flth";
+    private static final String COMPANY_NAME = "companyName";
+    private static final String SIGNATURE = "signature";
+
+    private static final int PASSWORD_RESET_VALIDITY_MINUTES = 10;
+
     private final JavaMailSender javaMailSender;
     private final SaleOrderRepository saleOrderRepository;
+    private final UserRepository userRepository;
     private final Configuration freemarkerConfiguration;
+    private final ConfigurationRepository configurationRepository;
 
     @Value("${spring.mail.username}")
     private String purezaDelSurGmail;
 
     @Override
-    public void sendRestorePasswordEmail(UserDocument userDocument, String code) {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            mimeMessageHelper.setSubject("Solicitud de cambio de contraseña");
-            mimeMessageHelper.setFrom(purezaDelSurGmail);
-            mimeMessageHelper.setTo(userDocument.getEmail());
-            mimeMessageHelper.setText(getBody(code), true);
+    public void sendRestorePasswordEmail(@NonNull UserDocument userDocument, @NonNull String code) {
+        Objects.requireNonNull(code, "Verification code cannot be null");
 
-            javaMailSender.send(mimeMessageHelper.getMimeMessage());
+        EmailRequest request = EmailRequest.builder()
+                .to(userDocument.getEmail())
+                .subject("Solicitud de cambio de contraseña")
+                .templateName(TEMPLATE_RESTORE_PASSWORD)
+                .model(Map.of(
+                        "code", code,
+                        "validityMinutes", PASSWORD_RESET_VALIDITY_MINUTES,
+                        "userName", getUserName(userDocument),
+                        COMPANY_NAME, PUREZA_DEL_SUR,
+                        SIGNATURE, DEFAULT_SIGNATURE
+                ))
+                .build();
 
-        } catch (Exception ex) {
-            log.error(ex);
-        }
+        sendTemplatedEmail(request);
+        log.info("Recovery password code was send to {} with code {}", userDocument.getEmail(), code);
     }
 
     @Override
-    public void sendWelcomeEmail(UserDocument userDocument) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setSubject("Bienvenido a Pureza del Sur");
-        simpleMailMessage.setFrom(purezaDelSurGmail);
-        simpleMailMessage.setTo(userDocument.getEmail());
-        simpleMailMessage.setText("Bienvenido a Pureza del Sur");
-        javaMailSender.send(simpleMailMessage);
+    public void sendWelcomeEmail(@NonNull UserDocument userDocument) {
+        Objects.requireNonNull(userDocument.getEmail(), "User email cannot be null");
+
+        EmailRequest request = EmailRequest.builder()
+                .to(userDocument.getEmail())
+                .subject("Bienvenido a " + PUREZA_DEL_SUR)
+                .templateName(TEMPLATE_WELCOME)
+                .model(Map.of(
+                        "userName", getUserName(userDocument),
+                        COMPANY_NAME, PUREZA_DEL_SUR,
+                        SIGNATURE, DEFAULT_SIGNATURE
+                ))
+                .build();
+
+        sendTemplatedEmail(request);
+        log.info("Welcome mail was send to {}", userDocument.getEmail());
     }
 
     @Override
-    public void sendPurchaseEmail(String saleOrderId) {
-        var saleOrder = saleOrderRepository.findById(saleOrderId).orElseThrow();
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            mimeMessageHelper.setSubject("Compra realizada");
-            mimeMessageHelper.setFrom(purezaDelSurGmail);
-            mimeMessageHelper.setTo(saleOrder.getClient().getEmail());
-            mimeMessageHelper.setText(bodyPurchase(saleOrder), true);
+    public void sendPurchaseEmail(@NonNull String saleOrderId) {
+        var model = new HashMap<String, Object>();
+        model.put(COMPANY_NAME, PUREZA_DEL_SUR);
+        model.put(SIGNATURE, DEFAULT_SIGNATURE);
+        var saleOrder = saleOrderRepository.findById(saleOrderId)
+                .orElseThrow(() -> new IllegalArgumentException("Sale order not found: " + saleOrderId));
+        model.put("clientName", getUserName(saleOrder.getClient()));
+        model.put("keys", saleOrder.getKeys());
+        EmailRequest request = EmailRequest.builder()
+                .to(saleOrder.getClient().getEmail())
+                .subject("Gracias por tu compra")
+                .templateName(TEMPLATE_PURCHASE)
+                .model(model)
+                .build();
 
-            javaMailSender.send(mimeMessageHelper.getMimeMessage());
-        } catch (Exception ex) {
-            log.error(ex);
-        }
+        sendTemplatedEmail(request);
     }
 
     @Override
     public void sendContactEmail(ContactRequest contactRequest) {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+        Objects.requireNonNull(contactRequest, "Contact request cannot be null");
+        Objects.requireNonNull(contactRequest.getModel(), "Contact request model cannot be null");
 
-            mimeMessageHelper.setSubject("Contacto web");
-            mimeMessageHelper.setFrom(purezaDelSurGmail);
-            mimeMessageHelper.setTo("omar.fdo.gomez@gmail.com");
-            String content = getContentFromTemplate(contactRequest.getModel());
-            mimeMessageHelper.setText(content, true);
+        Map<String, Object> model = new HashMap<>(contactRequest.getModel());
+        model.put(COMPANY_NAME, PUREZA_DEL_SUR);
+        model.put(SIGNATURE, DEFAULT_SIGNATURE);
 
-            javaMailSender.send(mimeMessageHelper.getMimeMessage());
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
+        EmailRequest request = EmailRequest.builder()
+                .to(purezaDelSurGmail)
+                .subject("Contacto web")
+                .templateName(TEMPLATE_CONTACT)
+                .model(model)
+                .build();
+
+        MimeMessage mimeMessage = createMimeMessageWithCC(
+                request.getTo(),
+                request.getSubject(),
+                processTemplate(request.getTemplateName(), request.getModel()),
+                CONTACT_CC_EMAIL
+        );
+
+        sendEmail(mimeMessage);
     }
 
     @Override
     public void sendTestEmail(String email) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setSubject("Email de prueba");
-        simpleMailMessage.setFrom(purezaDelSurGmail);
-        simpleMailMessage.setTo(email);
-        simpleMailMessage.setText("Email de prueba ;)");
-        javaMailSender.send(simpleMailMessage);
+        Objects.requireNonNull(email, "Email address cannot be null");
+
+        EmailRequest request = EmailRequest.builder()
+                .to(email)
+                .subject("Email de prueba")
+                .templateName(TEMPLATE_TEST)
+                .model(Map.of(
+                        COMPANY_NAME, PUREZA_DEL_SUR,
+                        SIGNATURE, DEFAULT_SIGNATURE
+                ))
+                .build();
+
+        sendTemplatedEmail(request);
     }
 
-    private String bodyPurchase(SaleOrderDocument order) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<table>");
-        sb.append("<thead><tr><th>Bidón</th><th>Clave</th></tr></thead>");
-        order.getKeys().forEach(item -> sb.append("<tr><td>")
-                .append(item.getKey())
-                .append("</td><td>")
-                .append(item.getValue())
-                .append("</td></tr>"));
-        sb.append("</table>");
-        return String.format("<html>" +
-                "<head></head>" +
-                "<body style='background-color: #FAFAFA;'>" +
-                "    <p>Hola %s,</p>" +
-                "    <p>Tu compra se ha procesado con éxito!</p>" +
-                "%s" +
-                "    <p>Atentamente,</p>" +
-                "    <p>Pureza del Sur</p>" +
-                "</body>" +
-                "</html>", order.getClient().getFullName(), sb);
+    @Override
+    public void sendPasswordResetByAdmin(@NonNull String id,@NonNull String password) {
+        var date = LocalDate.now();
+        var formatCL = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var model = new HashMap<String, Object>();
+        model.put(COMPANY_NAME, PUREZA_DEL_SUR);
+        model.put(SIGNATURE, DEFAULT_SIGNATURE);
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        model.put("userName", user.getFullName());
+        model.put("email", user.getEmail());
+        model.put("newPassword", password);
+        model.put("date", date.format(formatCL));
+        EmailRequest request = EmailRequest.builder()
+                .to(user.getEmail())
+                .subject("Tu contraseña ha cambiado")
+                .templateName("password-updated-by-admin.flth")
+                .model(model)
+                .build();
+
+        sendTemplatedEmail(request);
     }
 
-    private String getBody(String code) {
-        return String.format("<html>" +
-                "<head></head>" +
-                "<body style='background-color: #FAFAFA;'>" +
-                "    <p>Hola!,</p>" +
-                "    <p>Hemos recibido una solicitud para acceder a tu cuenta en <strong>Pureza del Sur</strong>, a través de tu dirección de correo. Tu código de verificación es:</p>" +
-                "    <p style='font-size: 1.8em;'>%s</p>" +
-                "    <p>El código tiene una validez de 10 minutos.</p>" +
-                "    <p>Si no has solicitado este código, puede que alguien esté intentado acceder a la cuenta de Pureza del Sur.<strong>No reenvíes este correo electrónico ni des el código a nadie.</strong></p>" +
-                "    <p>Atentamente,</p>" +
-                "    <p>El equipo de cuentas de Pureza del Sur ;)</p>" +
-                "</body>" +
-                "</html>", code);
+    private void sendTemplatedEmail(EmailRequest request) {
+        MimeMessage mimeMessage = createMimeMessage(
+                request.getTo(),
+                request.getSubject(),
+                processTemplate(request.getTemplateName(), request.getModel())
+        );
+        sendEmail(mimeMessage);
     }
 
-    private String getContentFromTemplate(Map<String, Object> model) {
-        StringBuilder content = new StringBuilder();
+    private MimeMessage createMimeMessage(String to, String subject, String htmlContent) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
-            content.append(FreeMarkerTemplateUtils.processTemplateIntoString(
-                    freemarkerConfiguration.getTemplate("contact-template.flth"), model));
-        } catch (Exception e) {
-            log.error("Error while processing email template", e);
+            var helper = new MimeMessageHelper(mimeMessage, true, ENCODING);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setFrom(purezaDelSurGmail);
+            helper.setText(htmlContent, true);
+            return mimeMessage;
+        } catch (MessagingException e) {
+            log.error("Error creating MIME message: to={}, subject={}", to, subject);
+            throw new EmailServiceException("Failed to create email message", e);
         }
-        return content.toString();
     }
 
+    private MimeMessage createMimeMessageWithCC(String to, String subject, String htmlContent, String cc) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, ENCODING);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setFrom(purezaDelSurGmail);
+            helper.setCc(cc);
+            helper.setText(htmlContent, true);
+            return mimeMessage;
+        } catch (MessagingException e) {
+            log.error("Error creating MIME message with CC: to={}, cc={}, subject={}", to, cc, subject);
+            throw new EmailServiceException("Failed to create email message with CC", e);
+        }
+    }
+
+    private String processTemplate(String templateName, Map<String, Object> model) {
+        try {
+            Template template = freemarkerConfiguration.getTemplate(templateName);
+            return FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+        } catch (IOException e) {
+            log.error("Template not found or not accessible: {}", templateName);
+            throw new EmailServiceException("Email template not found", e);
+        } catch (TemplateException e) {
+            log.error("Error processing template {}: {}", templateName, e.getMessage());
+            throw new EmailServiceException("Failed to process email template", e);
+        }
+    }
+
+    private void sendEmail(MimeMessage mimeMessage) {
+        try {
+            javaMailSender.send(mimeMessage);
+        } catch (MailException e) {
+            log.error("Failed to send email: {}", e.getMessage());
+            throw new EmailServiceException("Failed to send email", e);
+        }
+    }
+
+    private String getUserName(UserDocument userDocument) {
+        return StringUtils.hasText(userDocument.getFullName()) ?
+                userDocument.getFullName() : "Nuevo Usuario";
+    }
 }

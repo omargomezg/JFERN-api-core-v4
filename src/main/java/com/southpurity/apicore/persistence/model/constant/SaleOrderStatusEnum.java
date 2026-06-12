@@ -1,5 +1,7 @@
 package com.southpurity.apicore.persistence.model.constant;
 
+import java.util.List;
+
 public enum SaleOrderStatusEnum {
     OK,
     FAILED,
@@ -11,5 +13,10 @@ public enum SaleOrderStatusEnum {
     REFUNDED,
     ERROR,
     TIMEOUT,
-    UNKNOWN
+    UNKNOWN;
+
+    public static List<SaleOrderStatusEnum> isPending() {
+        return List.of(PENDING, PENDING_VALIDATION);
+    }
 }
+

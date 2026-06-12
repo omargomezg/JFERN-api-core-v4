@@ -5,9 +5,10 @@ import com.southpurity.apicore.dto.payment.PaymentRequest;
 import com.southpurity.apicore.persistence.model.constant.PaymentTypeEnum;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.service.EmailService;
-import com.southpurity.apicore.service.PayFactory;
 import com.southpurity.apicore.service.SaleOrderService;
+import com.southpurity.apicore.service.payment.PayFactory;
 import com.southpurity.apicore.utils.Utils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -33,7 +33,7 @@ public class PaymentController {
     private final PayFactory payFactory;
 
     @GetMapping("/client/{id}")
-    public ResponseEntity<List<SaleOrderDocument>> getAllOrdersByUser(@PathVariable String id) {
+    public ResponseEntity<List<SaleOrderDocument>> getAllOrdersByUser(@PathVariable("id") String id) {
         return ResponseEntity.ok(saleOrderService.getAllOrdersByUser(id));
     }
 
@@ -50,14 +50,16 @@ public class PaymentController {
         request.setIpAddress(Utils.getIpAddress(httpServletRequest));
         request.setUserAgent(Utils.getUserAgent(httpServletRequest));
         var service = payFactory.getStrategy(PaymentTypeEnum.valueOf(request.getPaymentType()));
-        var response = service.getPayment(request);
-        // saleOrderService.asyncTaskForCheckIncompleteTransactions(xx);
+        PaymentResponse response = service.getPayment(request);
+        saleOrderService.asyncTaskForCheckIncompleteTransactions(response.getSaleOrderId());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/status/{saleOrderId}")
-    public ResponseEntity<PaymentResponse> getPaymentStatus(@PathVariable String saleOrderId) {
-        var service = payFactory.getStrategy(PaymentTypeEnum.GETNET);
+    public ResponseEntity<PaymentResponse> getPaymentStatus(@PathVariable("saleOrderId") String saleOrderId) {
+        var saleOrder = saleOrderService.findById(saleOrderId)
+                .orElseThrow();
+        var service = payFactory.getStrategy(saleOrder.getPaymentDetail().getPaymentType());
         var result = service.getPaymentStatus(saleOrderId);
         if (result.getPaymentStatus().equals("APPROVED")) {
             emailService.sendPurchaseEmail(saleOrderId);

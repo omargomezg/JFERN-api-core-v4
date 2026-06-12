@@ -11,5 +11,5 @@ public interface ProductRepositoryCustom {
 
     void markAsAvailable(List<String> ids, String place);
 
-    List<ProductDocument> markAsTaken(int quantity, String place);
+    List<ProductDocument> markAsTaken(int quantity, String place, String shortName);
 }

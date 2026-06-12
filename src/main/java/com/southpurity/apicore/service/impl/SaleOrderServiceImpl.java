@@ -1,10 +1,11 @@
 package com.southpurity.apicore.service.impl;
 
 import com.placetopay.java_placetopay.Entities.Models.RedirectInformation;
-import com.southpurity.apicore.dto.SaleOrderFilter;
+import com.southpurity.apicore.dto.SaleOrderRequest;
 import com.southpurity.apicore.persistence.model.ProductDocument;
 import com.southpurity.apicore.persistence.model.constant.OrderStatusEnum;
 import com.southpurity.apicore.persistence.model.constant.SaleOrderStatusEnum;
+import com.southpurity.apicore.persistence.model.saleorder.History;
 import com.southpurity.apicore.persistence.model.saleorder.SaleOrderDocument;
 import com.southpurity.apicore.persistence.repository.ConfigurationRepository;
 import com.southpurity.apicore.persistence.repository.ProductRepository;
@@ -13,12 +14,19 @@ import com.southpurity.apicore.persistence.repository.UserRepository;
 import com.southpurity.apicore.service.SaleOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,15 +56,27 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public Page<SaleOrderDocument> getAll(SaleOrderFilter filter) {
-        var page = saleOrderRepository.findAll(filter);
-        page.getContent().forEach(this::sumTotal);
-        return page;
+    public Page<SaleOrderDocument> getAll(SaleOrderRequest filter) {
+        Pageable pageable = PageRequest.of(
+                filter.getPage(), filter.getSize(),
+                Sort.by(filter.getDirection(), filter.getSortBy())
+        );
+        Query query = new Query().with(pageable);
+        if (filter.getUserId() != null) {
+            query.addCriteria(Criteria.where("client").is(new ObjectId(filter.getUserId())));
+        }
+        var saleOrders = mongoTemplate.find(query, SaleOrderDocument.class);
+        saleOrders.forEach(this::sumTotal);
+        return PageableExecutionUtils.getPage(
+                saleOrders,
+                pageable,
+                () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), SaleOrderDocument.class));
     }
 
     @Async
     @Override
-    public void asyncTaskForCheckIncompleteTransactions(SaleOrderDocument saleOrderDocument) {
+    public void asyncTaskForCheckIncompleteTransactions(String saleOrderId) {
+        var saleOrderDocument = saleOrderRepository.findById(saleOrderId).orElseThrow();
         var configuration = configurationRepository.findBySiteName("southpurity").orElseThrow();
         try {
             Thread.sleep(configuration.getMillisecondsToExpirePayment());
@@ -64,16 +84,19 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             log.error(e.getMessage());
         }
         saleOrderDocument = saleOrderRepository.findById(saleOrderDocument.getId()).orElseThrow();
-        // check status, if null return
-        if (saleOrderDocument.getPaymentDetail() == null) {
-            return;
-        }
-        if (saleOrderDocument.getPaymentDetail().getStatus().equals("PENDING")) {
+        if (saleOrderDocument.getStatus().equals(SaleOrderStatusEnum.PENDING)) {
             saleOrderDocument.getProducts().forEach(this::releaseProduct);
+            saleOrderDocument.setProducts(new HashSet<>());
+            saleOrderDocument.getHistory().add(History.builder().message("La orden fue cancelada por expiración de tiempo")
+                    .build());
+            saleOrderDocument.setStatus(SaleOrderStatusEnum.TIMEOUT);
             saleOrderRepository.save(saleOrderDocument);
         }
-        saleOrderDocument.setStatus(SaleOrderStatusEnum.TIMEOUT);
-        saleOrderRepository.save(saleOrderDocument);
+    }
+
+    @Override
+    public Optional<SaleOrderDocument> findByPaymentToken(String token) {
+        return saleOrderRepository.findByToken(token);
     }
 
     private void releaseProduct(ProductDocument productDocument) {
@@ -94,5 +117,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         saleOrder.getPaymentDetail().setMessage(payment.getStatus().getMessage());
         saleOrder.getPaymentDetail().setDate(payment.getStatus().getDate());
         return saleOrderRepository.save(saleOrder);
+    }
+
+    @Override
+    public Optional<SaleOrderDocument> findById(String id) {
+        return saleOrderRepository.findById(id);
     }
 }

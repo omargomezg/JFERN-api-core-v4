@@ -1,8 +1,8 @@
 package com.southpurity.apicore.dto.getnet;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
 
 @Data
 public class Person {

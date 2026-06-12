@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.southpurity.apicore.controller.View;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 import com.southpurity.apicore.persistence.model.constant.UserStatusEnum;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import javax.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
@@ -48,4 +48,6 @@ public class UserDTO {
     @Builder.Default
     @JsonView({View.Stocker.class, View.Customer.class})
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
+
+    private Boolean sendEmail;
 }

@@ -1,19 +1,18 @@
 package com.southpurity.apicore.dto;
 
-import lombok.Data;
-
 import java.util.Map;
+
+import lombok.Data;
 
 @Data
 public class ContactRequest {
-    private String names;
-    private String lastName;
+    private String contactName;
     private String email;
     private String telephone;
     private String message;
 
     public Map<String, Object> getModel() {
-        return Map.of("names", names, "lastName", lastName, "email", email, "telephone", telephone, "message", message);
+        return Map.of("contactName", contactName, "email", email, "telephone", telephone, "message", message);
     }
 
 

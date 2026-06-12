@@ -7,6 +7,8 @@ import com.southpurity.apicore.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,5 +39,10 @@ public class PlaceController {
         return ResponseEntity.ok(customerService.getMyPlaces());
     }
 
+    @PatchMapping("/{place}/product/{product}")
+    public ResponseEntity<Boolean> releaseProduct(@PathVariable("place") String place,
+            @PathVariable("product") String product) {
+        return ResponseEntity.ok(placeService.releaseProduct(place, product));
+    }
 
 }

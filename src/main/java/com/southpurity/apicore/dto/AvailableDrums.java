@@ -13,8 +13,12 @@ public class AvailableDrums {
     private Integer available;
 
     @JsonView(View.Anonymous.class)
-    private Integer price;
+    private String description;
 
     @JsonView(View.Anonymous.class)
-    private Integer priceWithDrum;
+    private Integer refillPrice;
+
+    @JsonView(View.Anonymous.class)
+    private Integer bottlePrice;
+
 }
