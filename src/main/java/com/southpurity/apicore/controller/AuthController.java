@@ -15,6 +15,7 @@ import com.southpurity.apicore.service.ProfileService;
 import com.southpurity.apicore.service.UserService;
 import com.southpurity.apicore.utils.Utils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ import java.util.NoSuchElementException;
 import com.southpurity.apicore.persistence.model.constant.RoleEnum;
 
 @RestController
+@Log4j2
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -52,6 +54,7 @@ public class AuthController {
     @PostMapping("/auth/token")
     public ResponseEntity<LoginResponse> createAuthenticationToken(@RequestBody UserDTO authenticationRequest)
             throws Exception {
+        log.info("User {} creating authentication", authenticationRequest);
         final Authentication auth = authenticate(authenticationRequest.getEmail().toLowerCase(),
                 authenticationRequest.getPassword());
         SecurityContextHolder.getContext().setAuthentication(auth);
